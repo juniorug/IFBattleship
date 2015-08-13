@@ -5,10 +5,10 @@ IFBattleship is a navy battle puzzle for arduino
 jogo: usar uma matriz de char [8][8] para mapear o tabuleiro.
 		caracteres usados:
 
-		A = barco
-		B = agua
-		C = Tiro_acertou
-		D = Tiro_errou
+		A = agua
+		B = barco
+		C = Tiro_certo
+		E = Tiro_errado
 
 
 		- inicialmente a matriz contem apenas A's, pois ainda nao foram adcionados os barcos nem foram disparados os tiros;
