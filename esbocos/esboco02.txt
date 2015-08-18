@@ -1,0 +1,131 @@
+
+
+//testa se o navio afundou
+boolean isSunkenShip(Boat boat, char matrix[8][8]){
+	if (!boat.sunken){
+		switch (boat.direction){
+			case 'h':
+				for (int i = boat.x; i < (boat.x + boat.size); i++){
+					if(matrix[i][boat.y] == 'B'){
+						//boat.sunken = false;
+						return false;
+						break;	
+					}
+				}
+				boat.sunken = true;
+				return boat.sunken;
+				break;
+			case 'v':
+				for (int i = boat.y; i < (boat.y + boat.size); i++){
+					if(matrix[boat.x][i] == 'B'){
+						//boat.sunken = false;
+						return false;
+						break;	
+					}
+				}
+				boat.sunken = true;
+				return boat.sunken;
+				break;
+		}
+	}
+	return boat.sunken;
+}
+
+// testa se o dado ponto x,y pertence a algum barco retornando o indice do mesmo. -1 se ponto nao pertence a nenhum barco
+int getShipIndexByGivenPoint(int x, int y, Boat[5] boats) {
+	for int (k =0; k < 5; k++){
+		switch (boat[k].direction){
+			case 'h':
+				for (int i = boat[k].x; i < (boat[k].x + boat[k].size); i++){
+					if((x == i) && (y == boat[k].y)){
+						return k;
+						break;	
+					}
+				}
+				break;
+			case 'v':
+				for (int i = boat[k].y; i < (boat[k].y + boat[k].size); i++){
+					if((x == boat[k].x) && (y == i)){
+						return k;
+						break;	
+					}
+				}
+				break;
+		}
+	}
+	return -1   //boat not found!
+}
+
+
+// testa se o tiro acertou um barco
+boolean fire(int x, int y, char matrix[8][8]){
+		bool fired = false;
+		if (matrix[x][y] == 'B') {
+			fired = true;
+			matrix[x][y] == 'C';    //acertou o tiro!
+		} else if (matrix[x][y] == 'A') {
+			matrix[x][y] == 'E';    //errou o tiro!
+		}
+
+		return fired;
+}
+
+boolean noMoreBoats(Boat[5] boatsPX){
+	for (int i = 0; i < 5; i++){
+		if (boat[i].sunken == false) {   //se ainda ha barcos nao afundados, retorna false.
+			return false;
+		}
+	}
+	return true;   //todos os barcos foram afundados
+}
+
+ boolean isGameOver(Boat[5] boatsPX){
+ 	return noMoreBoats(boatsPX);
+ }
+
+ void changeCurrentPlayer(){
+ 	p1.currentPlayer = !p1.currentPlayer;
+  	p2.currentPlayer = !p2.currentPlayer;	
+ }
+
+Player getCurrentPlayer(){
+	return p1.currentPlayer ? p1 : p2; 
+}
+
+Player getCurrentDefender(){
+	return p1.currentPlayer ? p2 : p1; 
+}
+
+// retorna a quantidade de barcos com tamanho igual ao passado como parametro
+int getCountBoardsBySize(Player player, int boatSize){
+	int count = 0;
+	for (int i = 0; i < 5; i++) {
+		if (player.boats[i].size == boatSize) {
+			count ++;
+		}
+	} 
+	return count;
+}
+
+
+
+// trecho do codigo
+	/*   fire(x,y,matrixPX) testa se o tiro acertou um barco
+	*	 getShipByGivenPoint(x,y,boatsPX) retorna o barco correspondente ao ponto
+	*	 isSunkenShip(boat,matrixPX) testa se o barco afundou
+	*/
+     if ((fire(x,y,matrixPX)){
+     	//Print "acertou o tiro!"
+     	if (isSunkenShip(boatsPX[getShipByGivenPoint(x,y,boatsPX)])){
+     		//Print "Navio afundou!"
+     		if(isGameOver){
+
+     		}
+     	}
+     } && ){
+
+     }
+
+
+
+
