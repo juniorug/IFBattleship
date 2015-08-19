@@ -1,32 +1,45 @@
 #include <GameMatrix.h>
 
+//define testados
+#define HORIZONTAL 'h'
+#define VERTICAL 'v'
 
-#define HORIZONTAL h
-#define VERTICAL v
 
-const char *boatDetails[5];   //tamanho do barco = indice + 1
+//detalhe dos barcos testados
+/* Tamanho do barco = indice + 1
 a[0] = "Hidroaviao"; 	// 2 por player
 a[1] = "Submarino";  	// 2 por player
 a[2] = "Cruzador";   	// 1 por player
 a[3] = "Encouracado";   // 1 por player
 a[4] = "Porta Aviao";   // 1 por player
+*/
+const char *boatDetails[5] = {"Hidroaviao", "Submarino", "Cruzador", "Encouracado", "Porta Aviao"};   
 
-
+//structs definidos corretamente, falta testar se funciona
 struct Boat {
-	int x;   //x e y sao as coordenadas iniciais do barco
-	int y;  
-	int size;
-	char direction;  //h: horizontal, v: vertical
-	bool sunken;     // true: navio afundado
+        int x;   //x e y sao as coordenadas iniciais do barco
+        int y;
+        int size;
+        char direction;  //h: horizontal, v: vertical
+        boolean sunken;     // true: navio afundado
 };
 
 struct Player{
-	struct Boat[5] boats;
-	bool currentPlayer;
-	char[8][8] matrix;
-	int playerIndex;	//p1 ou p2
-	int availableBoats;
+        struct Boat boats[5];
+        boolean currentPlayer;  //define qual o player que está atacando.
+        char matrixBoats[8][8];   //matriz de barcos
+        char matrixShots[8][8]; //usada quando adcionado a segunda matriz de led
+        int playerIndex;        //p1 ou p2
+        int countHidro;
+        int countSub;
+        int countCruz;
+        int countEnc;
+        int countPA;
+        int countTiros;  //pra sabermos quantos tiros o player efetuou
+        int availableBoats;  //quantidade de barcos no tabuleiro
 };
+
+//406186474
 
 /*variaveis do jogo
 char[][] boardP1;
@@ -53,8 +66,8 @@ void loop(){
 
 //configura a inicializaço do jogo
 void startGame(){
-  p1 =  {null, true, getNewMatrix(), 1, 0};
-  p2 =  {null, false, getNewMatrix(), 2, 0};
+  p1 =  {null, true, getNewMatrix(),getNewMatrix(), 1, 0, 0, 0, 0, 0, 0, 0};
+  p2 =  {null, false, getNewMatrix(),getNewMatrix(), 1, 0, 0, 0, 0, 0, 0, 0};
   startPlayer(P1); //inicializa as matrizes
   startPlayer(P2); 
 }
