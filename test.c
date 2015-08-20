@@ -243,11 +243,11 @@ bool insert = false;
 
 	if(player.availableBoats < 5){
 		for (int i=0; i<5; i++){
-				if ((player.boats[i].size==1) && ((player.countHidro >= 0)&&(player.countCruz <= 2))) { // valida se o jogador pode inserir hidroaviao
+				if ((player.boats[i].size==1) && ((player.countHidro >= 0)&&(player.countHidro <= 2))) { // valida se o jogador pode inserir hidroaviao
 						printf("hidroaviao pode ser inserido");
 						insert = true;
 				}
-				else if  ((player.boats[i].size==2) && ((player.countSub >= 0)&&(player.countCruz <= 2))) { // valida se o jogador pode inserir submarino
+				else if  ((player.boats[i].size==2) && ((player.countSub >= 0)&&(player.countSub <= 2))) { // valida se o jogador pode inserir submarino
 					printf("submarino pode ser inserido");
 					insert = true;
 				}
