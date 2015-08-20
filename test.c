@@ -14,6 +14,11 @@ a[4] = "Porta Aviao";   // 1 por player
 */
 const char *boatDetails[5] = {"Hidroaviao", "Submarino", "Cruzador", "Encouracado", "Porta Aviao"};   
 
+// criando tipo booleano
+typedef int bool;
+#define true 1
+#define false 0
+
 struct Boat {
 	int x;   //x e y sao as coordenadas iniciais do barco
 	int y;
@@ -51,6 +56,7 @@ void printBoatDetails(struct Boat boat);
 void incrementBoatCount(struct Player *player, int boatSize);
 void decrementBoatCount(struct Player *player, int boatSize);
 void fillBoatMatrix(char matrix[8][8], struct Boat boat);
+boolean isBoatAvailable(struct Player player);
 
 //variable declarations
 int playerIndex = 1;
@@ -70,9 +76,10 @@ int main (int argc, char** argv)
     fillEmptyPlayer(&p2, &playerIndex);
     /*printPlayerDetails(p2);*/
 	   
-    addBoat(&p1,1,1,3,VERTICAL);
+    addBoat(&p1,1,1,2,VERTICAL);
     printBoatDetails(p1.boats[p1.availableBoats -1]);	
     printPlayerDetails(p1);
+    isBoatAvailable(p1);
     return (0);
 }
 
@@ -216,6 +223,7 @@ void printBoatDetails(struct Boat boat){
 }
 
 //testado
+//Imprime matriz após marcação dos barcos pelo jogador
 void fillBoatMatrix(char matrix[8][8], struct Boat boat){
 	if (boat.direction == HORIZONTAL){
 		for (int i = boat.x; i<=boat.size+boat.x-1; i++ )
@@ -227,6 +235,40 @@ void fillBoatMatrix(char matrix[8][8], struct Boat boat){
 		{matrix[i][boat.x]='B';
 		}
 	}
+}
+
+//valida antes da inserção do barco se este pode ser inserido
+boolean isBoatAvailable(struct Player player){
+bool insert = false;
+
+	if(player.availableBoats < 5){
+		for (int i=0; i<5; i++){
+				if ((player.boats[i].size==1) && ((player.countHidro >= 0)&&(player.countCruz <= 2))) { // valida se o jogador pode inserir hidroaviao
+						printf("hidroaviao pode ser inserido");
+						insert = true;
+				}
+				else if  ((player.boats[i].size==2) && ((player.countSub >= 0)&&(player.countCruz <= 2))) { // valida se o jogador pode inserir submarino
+					printf("submarino pode ser inserido");
+					insert = true;
+				}
+				else if  ((player.boats[i].size==3) && (player.countCruz == 0)){ // valida se o jogador pode inserir cruzador
+					printf("cruzador pode ser inserido");
+					insert = true;
+				}
+				else if  ((player.boats[i].size==4) && (player.countEnc == 0)) { // valida se o jogador pode inserir encourado
+					printf("encourados pode ser inserido");
+					insert = true;
+				}
+				else if ((player.boats[i].size==5) && (player.countPA ==0)) { // valida se o jogador pode inserir porta aviao
+					printf("porta aviao pode ser inserido");
+					insert = true;
+				}
+				else {
+					insert = false;
+				}
+		}
+	}
+	return insert;
 }
 
 
