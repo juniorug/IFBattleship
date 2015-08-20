@@ -1,0 +1,25 @@
+#######################################
+# Syntax Coloring Map For ScrollTest4MAX2
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+ScrollTest4MAX2	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+scrollAllFonts	KEYWORD2
+scrollGivenFont	KEYWORD2
+scrollMessage	KEYWORD2
+loadBufferLong	KEYWORD2
+printBufferLong	KEYWORD2
+rotateBufferLong	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
