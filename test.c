@@ -1,13 +1,20 @@
 #include <stdio.h>
+#include <ctype.h>
 
-#define HORIZONTAL 'h'
-#define VERTICAL 'v'
+#define HORIZONTAL 'H'
+#define VERTICAL 'V'
+#define AGUA 'A' 
+#define BARCO 'B'  
+#define TIRO_CERTO 'C'
+#define TIRO_ERRADO 'E'
 #define DIM 8
+#define QTD_PLAYERS 2
+#define MAX_BOATS 7
 
 //typedef int bool;
 typedef enum { false, true } boolean;
 
-// criando tipo boolo
+// criando tipo bool
 typedef int bool;
 #define true 1
 #define false 0
@@ -26,15 +33,15 @@ struct Boat {
     int x;   //x e y sao as coordenadas iniciais do barco
     int y;
     int size;
-    char direction;  //h: horizontal, v: vertical
+    char direction;  //H: horizontal, V: vertical
     bool sunken;     // true: navio afundado
 };
 
 struct Player{
-    struct Boat boats[5];
+    struct Boat boats[MAX_BOATS];
     bool currentPlayer;  //define qual o player que est√° atacando.
-    char matrixBoats[8][8];   //matriz de barcos
-    char matrixShots[8][8]; //usada quando adcionado a segunda matriz de led
+    char matrixBoats[DIM][DIM];   //matriz de barcos
+    char matrixShots[DIM][DIM]; //usada quando adcionado a segunda matriz de led
     int playerIndex;    //p1 ou p2
     int countHidro;
     int countSub;
@@ -44,75 +51,101 @@ struct Player{
     int countShots;  //pra sabermos quantos tiros o player efetuou
     int availableBoats;  //quantidade de barcos no tabuleiro
 };
-/*
-static const struct Boat emptyBoat;
-static const struct Player emptyPlayer;
-static const char emptyMatrix[8][8];*/
 
 //function declaratioins
-void fillEmptyPlayer(struct Player *player, int *playerIndex);
-void ResetMatrix(char matrix[8][8]);
-void printMatrix(char matrix[8][8]);
-void printPlayerDetails(struct Player player);
-void printBoatDetails(struct Boat boat);
-bool addBoat(struct Player *player,int x, int y, int size, char direction, char **mensagem);
+void startGame();
+void initializePlayer(struct Player *player, int *playerIndex);
+bool addBoat(struct Player *player,int x, int y, int size, char direction, char **message);
 bool isValidBoatSize(int boatSize);
 bool isBoatAvailable(struct Player player, int boatSize);
 bool isValidBoatPlace(int x, int y, int boatSize, char direction , struct Player player);
-void addBoatToMatrix(char matrix[8][8], struct Boat boat);
+void addBoatToMatrix(char matrix[DIM][DIM], struct Boat boat);
 void incrementBoatCount(struct Player *player, int boatSize);
 void decrementBoatCount(struct Player *player, int boatSize);
-//bool isBoatAvailable(struct Player player);
+void ResetMatrix(char matrix[DIM][DIM]);
+void printMatrix(char matrix[DIM][DIM]);
+void printPlayerDetails(struct Player player);
+void printBoatDetails(struct Boat boat);
+
 //variable declarations
 int playerIndex;
-char *mensagem;
+char *message;
+struct Player players[QTD_PLAYERS]; //array de jogadores
 
 int main (int argc, char** argv)
 {
     playerIndex = 1;
-    mensagem = "";
-    //struct Boat nullBoat = {-1,-1,0,HORIZONTAL,true};    
-    //struct Player p1 =  {nullBoat, true, emptyMatrix,emptyMatrix, 1, 0, 0, 0, 0, 0, 0, 0};    
-    //struct Player p1 = emptyPlayer;
-    struct Player p1;
-    //p1.currentPlayer = true;
-    fillEmptyPlayer(&p1, &playerIndex);
-    printPlayerDetails(p1);
+    message = "";
+    startGame();
     
-    //struct Player p2 = emptyPlayer;
-    struct Player p2;
-    //p2.currentPlayer = false;
-    fillEmptyPlayer(&p2, &playerIndex);
-    /*printPlayerDetails(p2);*/
-     
-    //add barco 1   
-    bool add = addBoat(&p1,0,3,3,HORIZONTAL, &mensagem);
-    printf("mensagem: %s\n", mensagem); 
-    if (add) {
-        printBoatDetails(p1.boats[p1.availableBoats -1]);    
-        printPlayerDetails(p1);
-    }
-    //add barco 2
-    add = addBoat(&p1,5,3,3,VERTICAL, &mensagem);
-    printf("mensagem: %s\n", mensagem); 
-    if (add) {
-        printBoatDetails(p1.boats[p1.availableBoats -1]);    
-        printPlayerDetails(p1);
-    }
+    printf("\nTodos os barcos foram adcionados! quantidade de players: %d. Hora de comecar o jogo!!!\n", playerIndex);
     return (0);
 }
 
 //testado
-bool addBoat(struct Player *player,int x, int y, int boatSize, char direction, char **mensagem){
+void startGame(){
+    for (int i = 0; i < QTD_PLAYERS; i++) {
+        initializePlayer(&players[i], &playerIndex);
+        printPlayerDetails(players[i]);    
+        while (players[i].availableBoats < MAX_BOATS) {
+            int x,y,boatSize;
+            char direction;  
+            printf("\nDigite a posicao X inicial do barco %d (0-%d): ", players[i].availableBoats + 1, MAX_BOATS);
+            scanf("%d", &x);
+            printf("Digite a posicao Y inicial do barco %d (0-%d): ", players[i].availableBoats + 1, MAX_BOATS );
+            scanf("%d", &y);
+            printf("Digite o tamanho do barco %d (1-5): ", players[i].availableBoats + 1);
+            scanf("%d", &boatSize);
+            printf("Digite a direcao do barco %d (H: horizontal,V: vertical): ", players[i].availableBoats + 1 );
+            scanf(" %c", &direction);
+            direction = toupper(direction);
+            printf("[X: %d] [Y: %d] [size: %d] [direction: %s]\n", x, y, boatSize, direction == HORIZONTAL ? "Horizontal" : "Vertical");
+
+            //add barco    
+            bool add = addBoat(&players[i], x, y, boatSize, direction, &message);
+            printf("message: %s\n", message); 
+            if (add) {
+                printBoatDetails(players[i].boats[players[i].availableBoats -1]);    
+                printPlayerDetails(players[i]);
+            }
+        }
+    } 
+}
+
+//testado
+void initializePlayer(struct Player *player, int *playerIndex){
+
+    if (*playerIndex == 1){
+        player->currentPlayer = true; 
+    } else {
+        player->currentPlayer = false;    
+    }
+    ResetMatrix(player->matrixBoats);
+    ResetMatrix(player->matrixShots);
+    player->playerIndex = *playerIndex;
+    player->countHidro = 0;
+    player->countSub = 0;
+    player->countCruz = 0;
+    player->countEnc = 0;
+    player->countPA = 0;
+    player->countShots = 0;
+    player->availableBoats = 0;
+    if(*playerIndex < QTD_PLAYERS) {
+        *playerIndex = *playerIndex + 1;         
+    }
+}
+
+//testado
+bool addBoat(struct Player *player,int x, int y, int boatSize, char direction, char **message) {
     bool add = false;
-    if(player->availableBoats >= 5) {
-        *mensagem = "erro! Quantidade maxima de barcos atingida";
+    if(player->availableBoats >= MAX_BOATS) {
+        *message = "erro! Quantidade maxima de barcos atingida";
     } else if (!isValidBoatSize(boatSize)) {     
-        *mensagem = "erro! tamanho do barco invalido";
+        *message = "erro! tamanho do barco invalido";
     } else if (!isBoatAvailable(*player, boatSize)) {     
-        *mensagem = "erro! Quantidade de boatDetails[size -1] atingida";
+        *message = "erro! Quantidade de boatDetails[size -1] atingida";
     } else if (!isValidBoatPlace(x, y, boatSize, direction, *player)) {  //checa se barco nao sobrepoe outro ou ultrapassa limites da matriz CRIAR ESSE METODO!!
-        *mensagem = "erro! Posicionamento do barco invalido";
+        *message = "erro! Posicionamento do barco invalido";
     } else {   //adcionar barco        
         struct Boat boat = {x,y,boatSize,direction,false};    
         player->boats[player->availableBoats] = boat;
@@ -120,10 +153,11 @@ bool addBoat(struct Player *player,int x, int y, int boatSize, char direction, c
         incrementBoatCount(player,boatSize);
         addBoatToMatrix(player->matrixBoats, boat);
         add = true;
-        *mensagem = "barco adcionado com sucesso!";
+        *message = "barco adcionado com sucesso!";
     }
     return add; 
 }
+
 //testado
 // testa se o tamanho do barco e valido
 bool isValidBoatSize(int boatSize){
@@ -166,48 +200,25 @@ bool isValidBoatPlace(int x, int y, int boatSize, char direction , struct Player
     } 
     //checa se nao sobrepoe outro barco 
     switch (direction){
-        case 'h':
+        case HORIZONTAL:
             for (int i = x; i < (x + boatSize); i++){
-                printf("ENTROU NO FOR H!\n"); 
-                printf("---------------\n");
-                printf("[X: %d], [Y: %d], [i: %d], {player.matrixBoats[x][i] = %c}\n", x, y, i, player.matrixBoats[x][i]);
-                printf("[X: %d], [Y: %d], [i: %d], {player.matrixBoats[i][x] = %c}\n", x, y, i, player.matrixBoats[i][x]);
-                printf("[X: %d], [Y: %d], [i: %d], {player.matrixBoats[y][i] = %c}\n", x, y, i, player.matrixBoats[x][i]);
-                printf("[X: %d], [Y: %d], [i: %d], {player.matrixBoats[i][y] = %c}\n", x, y, i, player.matrixBoats[i][x]);
-                printf("[X: %d], [Y: %d], [i: %d], {player.matrixBoats[x][y] = %c}\n", x, y, i, player.matrixBoats[x][i]);
-                printf("[X: %d], [Y: %d], [i: %d], {player.matrixBoats[y][x] = %c}\n", x, y, i, player.matrixBoats[i][x]);
-                printf("---------------\n");
-                if(player.matrixBoats[y][i] == 'B'){  // sobrepondo um barco // if(player.matrixBoats[i][y] == 'B'){
-                   printf("Sobrepoe! x=%d, y=%d, i=%d \n", x,y,i); 
+                if(player.matrixBoats[y][i] == BARCO){  // sobrepondo um barco // if(player.matrixBoats[i][y] == 'B'){
                     return false;
                     break;    
                 }
             }
-            printf("Passou H!\n"); 
             return true;
             break;
-        case 'v':
+        case VERTICAL:
             for (int i = y; i < (y + boatSize); i++){
-                printf("ENTROU NO FOR V!\n"); 
-                printf("---------------\n");
-                printf("[X: %d], [Y: %d], [i: %d], {player.matrixBoats[x][i] = %c}\n", x, y, i, player.matrixBoats[x][i]);
-                printf("[X: %d], [Y: %d], [i: %d], {player.matrixBoats[i][x] = %c}\n", x, y, i, player.matrixBoats[i][x]);
-                printf("[X: %d], [Y: %d], [i: %d], {player.matrixBoats[y][i] = %c}\n", x, y, i, player.matrixBoats[x][i]);
-                printf("[X: %d], [Y: %d], [i: %d], {player.matrixBoats[i][y] = %c}\n", x, y, i, player.matrixBoats[i][x]);
-                printf("[X: %d], [Y: %d], [i: %d], {player.matrixBoats[x][y] = %c}\n", x, y, i, player.matrixBoats[x][i]);
-                printf("[X: %d], [Y: %d], [i: %d], {player.matrixBoats[y][x] = %c}\n", x, y, i, player.matrixBoats[i][x]);
-                printf("---------------\n");
-                if(player.matrixBoats[i][x] == 'B'){   //if(player.matrixBoats[x][i] == 'B'){
-                    printf("Sobrepoe! x=%d, y=%d, i=%d \n", x,y,i); 
+                if(player.matrixBoats[i][x] == BARCO){   //if(player.matrixBoats[x][i] == 'B'){
                     return false;   // sobrepondo um barco
                     break;    
                 }
             }
-            printf("Passou V!\n"); 
             return true;
             break;
     }
-    printf("TERMINOU SWITCH!\n"); 
     return true;
 }
 
@@ -216,13 +227,13 @@ bool isValidBoatPlace(int x, int y, int boatSize, char direction , struct Player
 //Adciona na matriz, o barco. necessario fazer validacao se È possivel adcionar antes.
 void addBoatToMatrix(char matrix[8][8], struct Boat boat) {
     if (boat.direction == HORIZONTAL){
-        for (int i = boat.x; i<=boat.size+boat.x-1; i++ ) {
-            matrix[boat.y][i] = 'B';
+        for (int i = boat.x; i <= boat.size+boat.x-1; i++ ) {
+            matrix[boat.y][i] = BARCO;
         }
     }
     else if (boat.direction == VERTICAL){
-        for (int i = boat.y; i<=boat.size+boat.y-1; i++ ) {
-            matrix[i][boat.x]='B';
+        for (int i = boat.y; i <= boat.size+boat.y-1; i++ ) {
+            matrix[i][boat.x] = BARCO;
         }
     }
 }
@@ -232,23 +243,23 @@ void incrementBoatCount(struct Player *player, int boatSize){
     switch(boatSize){
        case 1:
              player->countHidro ++;
-           break;
+             break;
 
        case 2:
              player->countSub ++;
-           break;
+             break;
 
        case 3:
              player->countCruz ++;
-           break;
+             break;
 
        case 4:
              player->countEnc ++;
-           break;
+             break;
 
        case 5:
              player->countPA ++;
-           break;
+             break;
     }
 }
 
@@ -256,54 +267,31 @@ void decrementBoatCount(struct Player *player, int boatSize){
     switch(boatSize){
        case 1:
              player->countHidro --;
-           break;
+             break;
 
        case 2:
              player->countSub --;
-           break;
+             break;
 
        case 3:
              player->countCruz --;
-           break;
+             break;
 
        case 4:
              player->countEnc --;
-           break;
+             break;
 
        case 5:
              player->countPA --;
-           break;
+             break;
     }
-}
-
-
-
-//testado
-void fillEmptyPlayer(struct Player *player, int *playerIndex){
-
-    if (*playerIndex == 1){
-        player->currentPlayer = true; 
-    } else {
-        player->currentPlayer = false;    
-    }
-    ResetMatrix(player->matrixBoats);
-    ResetMatrix(player->matrixShots);
-    player->playerIndex = *playerIndex;
-    player->countHidro = 0;
-    player->countSub = 0;
-    player->countCruz = 0;
-    player->countEnc = 0;
-    player->countPA = 0;
-    player->countShots = 0;
-    player->availableBoats = 0;
-    *playerIndex = *playerIndex + 1;         
 }
 
 //testado
 void ResetMatrix(char matrix[8][8]){
   for (int row = 0; row < DIM; row++) {
     for (int col = 0; col < DIM ; col++) {  
-      matrix[row][col] = 'A';
+      matrix[row][col] = AGUA;
     }
   }
 }
@@ -352,42 +340,6 @@ void printBoatDetails(struct Boat boat){
     printf("Position Y0: %d\n", boat.y);
     printf("Size: %d\n", boat.size); 
     printf("Tipe: %s\n", boatDetails[boat.size-1]); 
-    printf("Direction: %s\n", boat.direction == 'h'? "Horizontal": "Vertical"); 
+    printf("Direction: %s\n", boat.direction == HORIZONTAL ? "Horizontal" : "Vertical"); 
     printf("Is sunken? %s\n", boat.sunken == 1 ? "Yes" : "NO");   
 }
-
-
-
-//valida antes da inserÁ„o do barco se este pode ser inserido
-/*bool isBoatAvailable(struct Player player){
-    bool insert = false;
-    if(player.availableBoats < 5){
-        for (int i=0; i<5; i++){
-                if ((player.boats[i].size==1) && ((player.countHidro >= 0)&&(player.countHidro <= 2))) { // valida se o jogador pode inserir hidroaviao
-                        printf("hidroaviao pode ser inserido");
-                        insert = true;
-                }
-                else if  ((player.boats[i].size==2) && ((player.countSub >= 0)&&(player.countSub <= 2))) { // valida se o jogador pode inserir submarino
-                    printf("submarino pode ser inserido");
-                    insert = true;
-                }
-                else if  ((player.boats[i].size==3) && (player.countCruz == 0)){ // valida se o jogador pode inserir cruzador
-                    printf("cruzador pode ser inserido");
-                    insert = true;
-                }
-                else if  ((player.boats[i].size==4) && (player.countEnc == 0)) { // valida se o jogador pode inserir encourado
-                    printf("encourados pode ser inserido");
-                    insert = true;
-                }
-                else if ((player.boats[i].size==5) && (player.countPA ==0)) { // valida se o jogador pode inserir porta aviao
-                    printf("porta aviao pode ser inserido");
-                    insert = true;
-                }
-                else {
-                    insert = false;
-                }
-        }
-    }
-    return insert;
-}*/
-
