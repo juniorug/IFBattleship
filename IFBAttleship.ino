@@ -318,6 +318,21 @@ boolean fire(int x, int y, char matrix[8][8]){
 		return fired;
 }
 
+
+// preenche a matriz de tiros
+void fillMatrixShots(int x, int y, char matrix[8][8], bool fired){
+    if ((matrix[x][y] == 'A') && (fired)){
+      matrix[x][y] == 'C';    //acertou o tiro!
+    } else if (matrix[x][y] == 'A') {
+      matrix[x][y] == 'E';    //errou o tiro!
+    }
+}
+
+
+
+
+
+
 boolean noMoreBoats(Boat[5] boatsPX){
 	for (int i = 0; i < 5; i++){
 		if (boat[i].sunken == false) {   //se ainda ha barcos nao afundados, retorna false.
