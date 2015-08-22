@@ -9,7 +9,7 @@
 #define TIRO_ERRADO 'E'
 #define DIM 8
 #define QTD_PLAYERS 2
-#define MAX_BOATS 7
+#define MAX_BOATS 2
 
 //typedef int bool;
 typedef enum { false, true } boolean;
@@ -66,6 +66,8 @@ void ResetMatrix(char matrix[DIM][DIM]);
 void printMatrix(char matrix[DIM][DIM]);
 void printPlayerDetails(struct Player player);
 void printBoatDetails(struct Boat boat);
+bool verifyDirection(char direction);
+boolean fire(int x, int y, char matrix[8][8]);
 
 //variable declarations
 int playerIndex;
@@ -76,9 +78,22 @@ int main (int argc, char** argv)
 {
     playerIndex = 1;
     message = "";
+    int x,y;
     startGame();
-    
     printf("\nTodos os barcos foram adcionados! quantidade de players: %d. Hora de comecar o jogo!!!\n", playerIndex);
+    
+	printf("Player %d digite a posicao X do tiro: ",players[0].currentPlayer ? 1:2);
+    scanf("%d", &x);
+    printf("Player %d digite a posicao Y do tiro: ",players[0].currentPlayer ? 1:2);
+    scanf("%d", &y);
+    printf("[X: %d] [Y: %d] \n", x, y);
+    if (fire(x,y, players[1].matrixBoats)){
+    	printf("ACERTOU!!!!!!!!");
+    	printPlayerDetails(players[1]);
+	}
+	else{
+		printf("ERROU!!!!!!!!");
+	}
     return (0);
 }
 
@@ -100,7 +115,7 @@ void startGame(){
             scanf(" %c", &direction);
             direction = toupper(direction);
             printf("[X: %d] [Y: %d] [size: %d] [direction: %s]\n", x, y, boatSize, direction == HORIZONTAL ? "Horizontal" : "Vertical");
-
+			
             //add barco    
             bool add = addBoat(&players[i], x, y, boatSize, direction, &message);
             printf("message: %s\n", message); 
@@ -146,7 +161,10 @@ bool addBoat(struct Player *player,int x, int y, int boatSize, char direction, c
         *message = "erro! Quantidade de boatDetails[size -1] atingida";
     } else if (!isValidBoatPlace(x, y, boatSize, direction, *player)) {  //checa se barco nao sobrepoe outro ou ultrapassa limites da matriz CRIAR ESSE METODO!!
         *message = "erro! Posicionamento do barco invalido";
-    } else {   //adcionar barco        
+    } else if (!verifyDirection(direction)){
+    	*message = "erro! Direcao invalida!";
+	}
+	else{   //adcionar barco        
         struct Boat boat = {x,y,boatSize,direction,false};    
         player->boats[player->availableBoats] = boat;
         player->availableBoats ++;
@@ -156,6 +174,13 @@ bool addBoat(struct Player *player,int x, int y, int boatSize, char direction, c
         *message = "barco adcionado com sucesso!";
     }
     return add; 
+}
+
+bool verifyDirection(char direction){
+	if ((direction!=HORIZONTAL) && (direction!=VERTICAL)){
+		return false;
+	}
+	return true;
 }
 
 //testado
@@ -343,3 +368,20 @@ void printBoatDetails(struct Boat boat){
     printf("Direction: %s\n", boat.direction == HORIZONTAL ? "Horizontal" : "Vertical"); 
     printf("Is sunken? %s\n", boat.sunken == 1 ? "Yes" : "NO");   
 }
+
+//testa se acertou ou errou o tiro
+boolean fire(int x, int y, char matrix[8][8]){
+		bool fired = false;
+		if (matrix[y][x] == 'B') {
+			fired = true;
+			matrix[y][x] = 'C';    //acertou o tiro!
+		} else if (matrix[y][x] == 'A') {
+			matrix[y][x] = 'E';    //errou o tiro!
+		}
+		printf("TESTE TIRO %c \n", matrix[y][x]);
+  printPlayerDetails(players[1]);
+		return fired;
+}
+
+
+
