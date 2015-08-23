@@ -68,6 +68,11 @@ void printPlayerDetails(struct Player player);
 void printBoatDetails(struct Boat boat);
 bool verifyDirection(char direction);
 boolean fire(int x, int y, char matrix[8][8]);
+void fillMatrixShots(int x, int y, char matrix[8][8], bool fired);
+int getShipIndexByGivenPoint(int x, int y, struct Boat boats[7]) ;
+bool isSunkenShip(struct Boat *boat, char matrix[8][8]);
+bool noMoreBoats(struct Player player);
+void changeCurrentPlayer(struct Player players[2]);
 
 //variable declarations
 int playerIndex;
@@ -84,16 +89,40 @@ int main (int argc, char** argv)
     
 	printf("Player %d digite a posicao X do tiro: ",players[0].currentPlayer ? 1:2);
     scanf("%d", &x);
+
     printf("Player %d digite a posicao Y do tiro: ",players[0].currentPlayer ? 1:2);
     scanf("%d", &y);
+
     printf("[X: %d] [Y: %d] \n", x, y);
-    if (fire(x,y, players[1].matrixBoats)){
-    	printf("ACERTOU!!!!!!!!");
+    bool fired = fire(x,y, players[1].matrixBoats);
+    if (fired){
+    	int k =  getShipIndexByGivenPoint(x, y, players[1].boats);
+    	
+    	printf("ACERTOU!!!!!!!!  Barco index: %d\n", k);
+    	if (isSunkenShip(&players[1].boats[k], players[1].matrixBoats)){
+    		printf("Barco AFUNDOU!!!!!!!!\n");
+    		printBoatDetails(players[1].boats[k]);
+    		decrementBoatCount(&players[1], players[1].boats[k].size);
+    		players[1].availableBoats --;
+    		if(noMoreBoats(players[1])){
+    			printf("JOGO ACABOU!! Player %d ganhou\n", players[0].currentPlayer ? 1:2);
+			} else {
+				printf("Jogo continua, agora e a vez do player %d\n", players[0].currentPlayer ? 2:1);
+				changeCurrentPlayer(players);
+			}
+		} else {
+			printf("Barco NAO afundou!!!!!!!!\n");
+			printBoatDetails(players[1].boats[k]);
+			printf("Jogo continua, agora e a vez do player %d\n", players[0].currentPlayer ? 2:1);
+			changeCurrentPlayer(players);
+		}
     	printPlayerDetails(players[1]);
 	}
 	else{
 		printf("ERROU!!!!!!!!");
 	}
+	fillMatrixShots(x,y,players[0].matrixShots, fired);
+	printPlayerDetails(players[0]);
     return (0);
 }
 
@@ -106,13 +135,16 @@ void startGame(){
             int x,y,boatSize;
             char direction;  
             printf("\nDigite a posicao X inicial do barco %d (0-%d): ", players[i].availableBoats + 1, MAX_BOATS);
-            scanf("%d", &x);
+			scanf("%d", &x);
+            
             printf("Digite a posicao Y inicial do barco %d (0-%d): ", players[i].availableBoats + 1, MAX_BOATS );
-            scanf("%d", &y);
+			scanf("%d", &y);
+            
             printf("Digite o tamanho do barco %d (1-5): ", players[i].availableBoats + 1);
             scanf("%d", &boatSize);
             printf("Digite a direcao do barco %d (H: horizontal,V: vertical): ", players[i].availableBoats + 1 );
             scanf(" %c", &direction);
+
             direction = toupper(direction);
             printf("[X: %d] [Y: %d] [size: %d] [direction: %s]\n", x, y, boatSize, direction == HORIZONTAL ? "Horizontal" : "Vertical");
 			
@@ -176,6 +208,7 @@ bool addBoat(struct Player *player,int x, int y, int boatSize, char direction, c
     return add; 
 }
 
+//testado
 bool verifyDirection(char direction){
 	if ((direction!=HORIZONTAL) && (direction!=VERTICAL)){
 		return false;
@@ -288,6 +321,7 @@ void incrementBoatCount(struct Player *player, int boatSize){
     }
 }
 
+//testado
 void decrementBoatCount(struct Player *player, int boatSize){
     switch(boatSize){
        case 1:
@@ -346,8 +380,8 @@ void printPlayerDetails(struct Player player){
     printf("player.playerIndex: %d\n", player.playerIndex);
     printf("player.matrixBoats: \n"); 
     printMatrix(player.matrixBoats);
-   /* printf("player.matrixShots: \n"); 
-    printMatrix(player.matrixShots);*/
+    printf("player.matrixShots: \n"); 
+    printMatrix(player.matrixShots);
     printf("player.countHidro: %d\n", player.countHidro);
     printf("player.countSub: %d\n", player.countSub);
     printf("player.countCruz: %d\n", player.countCruz);
@@ -369,6 +403,7 @@ void printBoatDetails(struct Boat boat){
     printf("Is sunken? %s\n", boat.sunken == 1 ? "Yes" : "NO");   
 }
 
+//testado
 //testa se acertou ou errou o tiro
 boolean fire(int x, int y, char matrix[8][8]){
 		bool fired = false;
@@ -383,5 +418,84 @@ boolean fire(int x, int y, char matrix[8][8]){
 		return fired;
 }
 
+//testado
+void fillMatrixShots(int x, int y, char matrix[8][8], bool fired){
+    if ((matrix[y][x] == 'A') && (fired)){
+      matrix[y][x] = 'C';    //acertou o tiro!
+    } else if (matrix[y][x] == 'A') {
+      matrix[y][x] = 'E';    //errou o tiro!
+    }
+}
 
 
+
+
+//testado
+// testa se o dado ponto x,y pertence a algum barco retornando o indice do mesmo. -1 se ponto nao pertence a nenhum barco
+int getShipIndexByGivenPoint(int x, int y, struct Boat boats[7]) {
+	for (int k = 0; k < 7; k++){
+		switch (boats[k].direction){
+			case HORIZONTAL:
+				for (int i = boats[k].x; i < (boats[k].x + boats[k].size); i++){
+					if((x == i) && (y == boats[k].y)){
+						return k;
+						break;	
+					}
+				}
+				break;
+			case VERTICAL:
+				for (int i = boats[k].y; i < (boats[k].y + boats[k].size); i++){
+					if((x == boats[k].x) && (y == i)){
+						return k;
+						break;	
+					}
+				}
+				break;
+		}
+	}
+	return -1;   //boat not found!
+}
+
+
+//testa se o navio afundou
+//testado
+bool isSunkenShip(struct Boat *boat, char matrix[8][8]){
+	if (!boat->sunken){
+		switch (boat->direction){
+			case HORIZONTAL:
+				for (int i = boat->x; i < (boat->x + boat->size); i++){
+					if(matrix[boat->y][i] == 'B'){
+						//boat.sunken = false;
+						return false;
+						break;	
+					}
+				}
+				boat->sunken = true;
+				return boat->sunken;
+				break;
+			case VERTICAL:
+				for (int i = boat->y; i < (boat->y + boat->size); i++){
+					if(matrix[i][boat->x] == 'B'){
+						//boat.sunken = false;
+						return false;
+						break;	
+					}
+				}
+				boat->sunken = true;
+				return boat->sunken;
+				break;
+		}
+	}
+	return boat->sunken;
+}
+//testado
+bool noMoreBoats(struct Player player){
+	
+	return player.availableBoats < 1;   //todos os barcos foram afundados
+}
+
+//testado
+void changeCurrentPlayer(struct Player players[2]){
+ 	players[0].currentPlayer = !players[0].currentPlayer;
+  	players[1].currentPlayer = !players[1].currentPlayer;	
+  }
