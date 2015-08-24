@@ -1,5 +1,7 @@
 #include "LedControl.h"
+#include "charLibrary.h"
 #define DIM 8
+
 
 int dim = 8;
 char matrix[8][8] = { { 'A','A','A','A','A','A','A','A' },
@@ -14,7 +16,6 @@ char matrix[8][8] = { { 'A','A','A','A','A','A','A','A' },
 
 LedControl lc = LedControl(12,11,10,1);
 
-
 void setup(){
   lc.shutdown(0,false);
   lc.clearDisplay(0);
@@ -22,7 +23,7 @@ void setup(){
 }
 
 void loop(){
-  printMatrix();
+ /* printMatrix();
   acendeTodosUmPorUm();
   printMatrix();
   apagaTodosUmPorUm();
@@ -30,10 +31,18 @@ void loop(){
   acendeUmApagaAnterior();
   clearMatrix();
   printMatrix();
-  delay(100);
+  delay(100);*/
+  printLetter(char_4);
+  delay(500);
+  clearMatrix();
+  delay(500);
 }
 
-
+void printLetter(const byte letter[7]){
+  for (int i = 0; i < 7; i++) {
+      lc.setRow(0,i,letter[i]);
+  }
+}
 
 void acendeTodosUmPorUm() {
 

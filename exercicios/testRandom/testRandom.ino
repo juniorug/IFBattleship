@@ -1,11 +1,12 @@
 #include "LedControl.h"
 #include "charLibrary.h"
+#include "messages.h"
 #define DIM 8
 
 LedControl lc = LedControl(12,11,10,1);
 
 
-const byte numbers[10][7] =  { {B01110000,B10001000,B10011000,B10101000,B11001000,B10001000,B01110000},
+/*const byte numbers[10][7] =  { {B01110000,B10001000,B10011000,B10101000,B11001000,B10001000,B01110000},
                             {B01000000,B11000000,B01000000,B01000000,B01000000,B01000000,B11100000},
                             {B01110000,B10001000,B00001000,B00010000,B00100000,B01000000,B11111000},
                             {B11111000,B00010000,B00100000,B00010000,B00001000,B10001000,B01110000},
@@ -15,21 +16,18 @@ const byte numbers[10][7] =  { {B01110000,B10001000,B10011000,B10101000,B1100100
                             {B11111000,B10001000,B00001000,B00010000,B00100000,B00100000,B00100000},
                             {B01110000,B10001000,B10001000,B01110000,B10001000,B10001000,B01110000},
                             {B01110000,B10001000,B10001000,B01111000,B00001000,B00010000,B01100000}
-                        };
+                        };*/
 
 void setup() {
    lc.shutdown(0,false);
    lc.clearDisplay(0);
    Serial.begin(9600);
+   randomSeed(analogRead(A0));
 }
 
 void loop() {
   chooseFirstPlayer();
 }
-
-
-
-
 
 //algoritmo para escolha de quem começa a jogar
 //int chooseFirstPlayer(){
@@ -38,62 +36,60 @@ void chooseFirstPlayer(){
   long p2Number = 0L;
 
   while (p1Number == p2Number) {
-    Serial.println("player 1 ready?");
+    Serial.println(PLAYER_1_READY);
     //while (digitalRead(buttonPlayer1) == LOW) {
-    for (int i = 0; i < 10; i++){
-      //mostraNumeroDisplay(1,p1Number);
+    for (int i = 0; i < 30; i++){
       generateAndShowNumber(1,&p1Number);
     }
     // mostra o numero obtido pelo p1:
+    Serial.println(PLAYER_1_NUMBER_CHOOSED);
+    Serial.println(p1Number);
     piscaNumeroDisplay(1, p1Number);
 
-    Serial.println("player 2 ready?");
+    Serial.println(PLAYER_2_READY);
     //while (digitalRead(buttonPlayer2) == LOW) {
-    for (int i = 0; i < 10; i++){
-      //mostraNumeroDisplay(2,p2Number);
-      generateAndShowNumber(2,&p1Number);
+    for (int i = 0; i < 30; i++){
+      generateAndShowNumber(2,&p2Number);
     }
     // mostra o numero obtido pelo p2:
+    Serial.println(PLAYER_2_NUMBER_CHOOSED);
+    Serial.println(p2Number);
     piscaNumeroDisplay(2, p2Number);
 
     if (p1Number == p2Number){
-      Serial.println("Empate!");
+      Serial.println(EMPATE);
     }
   }
   if (p1Number > p2Number) {
-    Serial.println("player 1 comeca!");
+    Serial.println(PLAYER_1_COMECA);
    // p1.currentPlayer = true;
    // p2.currentPlayer = false;
   } else {
-    Serial.println("player 2 comeca!");
+    Serial.println(PLAYER_1_COMECA);
    // p2.currentPlayer = true;
     //p1.currentPlayer = false;
   } 
+  delay(1000);
 }
 
-void generateAndShowNumber(int player, long *number){
-  randomSeed(analogRead(0));
+void generateAndShowNumber(int player, long *number){ 
   *number = random(10);
-  //MOSTRA O NUMERO NO DISPLAY:
-  //mostraNumeroDisplay(player, number);
   Serial.println("random: ");
   Serial.println(*number);
   mostraNumeroDisplay( 1,*number);
-  delay(500);
 }
 
 void mostraNumeroDisplay(int display, long numero){
-  //PrintDisplay(display,numero);
   printLetter(numbers[((int)numero)]);
-  delay(100);
-  lc.clearDisplay(0);
+  delay(50);
 }
+
 void piscaNumeroDisplay(int display, long numero){
   for (int i = 0; i < 5; i++) {
-    //PrintDisplay(display,numero);
     printLetter(numbers[((int)numero)]);
-    delay(1000);
+    delay(500);
     lc.clearDisplay(0);
+    delay(500);
   }
 }
 

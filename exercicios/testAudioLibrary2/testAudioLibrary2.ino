@@ -9,16 +9,25 @@ char mychar;
 
 void setup(){
 
-  tmrpcm.speakerPin = 11; //11 on Mega, 9 on Uno, Nano, etc
+  tmrpcm.speakerPin = 46; //11 on Mega, 9 on Uno, Nano, etc
 
   Serial.begin(9600);//boolean SDClass::begin(uint8_t csPin, int8_t mosi, int8_t miso, int8_t sck) {
-  //if (!SD.begin(SD_ChipSelectPin)) {  // see if the card is present and can be initialized:
-  if (!SD.begin(53,51,50,52)) {
+  
+  if (!SD.begin(SD_ChipSelectPin)) {  // see if the card is present and can be initialized:
+  //if (!SD.begin(53,51,50,52)) {
     Serial.println("SD fail");  
     return;   // don't do anything more if not
   }
+  
+/*  bool begin = false;
+  while (!begin) {  // see if the card is present and can be initialized:
+      begin = SD.begin(SD_ChipSelectPin); 
+      if (!begin) {
+          Serial.println("SD fail");
+      }
+  }*/  
   Serial.println("Initialization Done!");  
-  tmrpcm.volume(1);
+  tmrpcm.setVolume(5);
   tmrpcm.play("pacman.wav"); //the sound file "music" will play each time the arduino powers up, or is reset
   Serial.println("first sound should finish");  
 }

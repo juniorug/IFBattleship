@@ -20,5 +20,6 @@ void setup() {
 }
 
 void loop() {
-  sc.scrollMessage(scrollText);
+  //sc.scrollMessage(scrollText);
+  sc.scrollGivenFont(65);
 }
