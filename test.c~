@@ -87,7 +87,7 @@ int main (int argc, char** argv)
     startGame();
     printf("\nTodos os barcos foram adcionados! quantidade de players: %d. Hora de comecar o jogo!!!\n", playerIndex);
     
-    printf("Player %d digite a posicao X do tiro: ",players[0].currentPlayer ? 1:2);
+	printf("Player %d digite a posicao X do tiro: ",players[0].currentPlayer ? 1:2);
     scanf("%d", &x);
 
     printf("Player %d digite a posicao Y do tiro: ",players[0].currentPlayer ? 1:2);
@@ -96,33 +96,33 @@ int main (int argc, char** argv)
     printf("[X: %d] [Y: %d] \n", x, y);
     bool fired = fire(x,y, players[1].matrixBoats);
     if (fired){
-        int k =  getShipIndexByGivenPoint(x, y, players[1].boats);
-        
-        printf("ACERTOU!!!!!!!!  Barco index: %d\n", k);
-        if (isSunkenShip(&players[1].boats[k], players[1].matrixBoats)){
-            printf("Barco AFUNDOU!!!!!!!!\n");
-            printBoatDetails(players[1].boats[k]);
-            decrementBoatCount(&players[1], players[1].boats[k].size);
-            players[1].availableBoats --;
-            if(noMoreBoats(players[1])){
-                printf("JOGO ACABOU!! Player %d ganhou\n", players[0].currentPlayer ? 1:2);
-            } else {
-                printf("Jogo continua, agora e a vez do player %d\n", players[0].currentPlayer ? 2:1);
-                changeCurrentPlayer(players);
-            }
-        } else {
-            printf("Barco NAO afundou!!!!!!!!\n");
-            printBoatDetails(players[1].boats[k]);
-            printf("Jogo continua, agora e a vez do player %d\n", players[0].currentPlayer ? 2:1);
-            changeCurrentPlayer(players);
-        }
-        printPlayerDetails(players[1]);
-    }
-    else{
-        printf("ERROU!!!!!!!!");
-    }
-    fillMatrixShots(x,y,players[0].matrixShots, fired);
-    printPlayerDetails(players[0]);
+    	int k =  getShipIndexByGivenPoint(x, y, players[1].boats);
+    	
+    	printf("ACERTOU!!!!!!!!  Barco index: %d\n", k);
+    	if (isSunkenShip(&players[1].boats[k], players[1].matrixBoats)){
+    		printf("Barco AFUNDOU!!!!!!!!\n");
+    		printBoatDetails(players[1].boats[k]);
+    		decrementBoatCount(&players[1], players[1].boats[k].size);
+    		players[1].availableBoats --;
+    		if(noMoreBoats(players[1])){
+    			printf("JOGO ACABOU!! Player %d ganhou\n", players[0].currentPlayer ? 1:2);
+			} else {
+				printf("Jogo continua, agora e a vez do player %d\n", players[0].currentPlayer ? 2:1);
+				changeCurrentPlayer(players);
+			}
+		} else {
+			printf("Barco NAO afundou!!!!!!!!\n");
+			printBoatDetails(players[1].boats[k]);
+			printf("Jogo continua, agora e a vez do player %d\n", players[0].currentPlayer ? 2:1);
+			changeCurrentPlayer(players);
+		}
+    	printPlayerDetails(players[1]);
+	}
+	else{
+		printf("ERROU!!!!!!!!");
+	}
+	fillMatrixShots(x,y,players[0].matrixShots, fired);
+	printPlayerDetails(players[0]);
     return (0);
 }
 
@@ -135,10 +135,10 @@ void startGame(){
             int x,y,boatSize;
             char direction;  
             printf("\nDigite a posicao X inicial do barco %d (0-%d): ", players[i].availableBoats + 1, MAX_BOATS);
-            scanf("%d", &x);
+			scanf("%d", &x);
             
             printf("Digite a posicao Y inicial do barco %d (0-%d): ", players[i].availableBoats + 1, MAX_BOATS );
-            scanf("%d", &y);
+			scanf("%d", &y);
             
             printf("Digite o tamanho do barco %d (1-5): ", players[i].availableBoats + 1);
             scanf("%d", &boatSize);
@@ -147,7 +147,7 @@ void startGame(){
 
             direction = toupper(direction);
             printf("[X: %d] [Y: %d] [size: %d] [direction: %s]\n", x, y, boatSize, direction == HORIZONTAL ? "Horizontal" : "Vertical");
-            
+			
             //add barco    
             bool add = addBoat(&players[i], x, y, boatSize, direction, &message);
             printf("message: %s\n", message); 
@@ -194,9 +194,9 @@ bool addBoat(struct Player *player,int x, int y, int boatSize, char direction, c
     } else if (!isValidBoatPlace(x, y, boatSize, direction, *player)) {  //checa se barco nao sobrepoe outro ou ultrapassa limites da matriz CRIAR ESSE METODO!!
         *message = "erro! Posicionamento do barco invalido";
     } else if (!verifyDirection(direction)){
-        *message = "erro! Direcao invalida!";
-    }
-    else{   //adcionar barco        
+    	*message = "erro! Direcao invalida!";
+	}
+	else{   //adcionar barco        
         struct Boat boat = {x,y,boatSize,direction,false};    
         player->boats[player->availableBoats] = boat;
         player->availableBoats ++;
@@ -210,10 +210,10 @@ bool addBoat(struct Player *player,int x, int y, int boatSize, char direction, c
 
 //testado
 bool verifyDirection(char direction){
-    if ((direction!=HORIZONTAL) && (direction!=VERTICAL)){
-        return false;
-    }
-    return true;
+	if ((direction!=HORIZONTAL) && (direction!=VERTICAL)){
+		return false;
+	}
+	return true;
 }
 
 //testado
@@ -247,7 +247,7 @@ bool isBoatAvailable(struct Player player, int boatSize){
 
 //testado
 //checa se pode adcionar um barco na posicao desejada
-// checa se nao ultrapassa os limites da matriz e se nao sobrepoe outro barco
+// checa se nao ultrapassa os limites da matriz e se não sobrepoe outro barco
 bool isValidBoatPlace(int x, int y, int boatSize, char direction , struct Player player){
     
     //checa se nao ultrapassa os limites da matriz
@@ -282,7 +282,7 @@ bool isValidBoatPlace(int x, int y, int boatSize, char direction , struct Player
 
 
 //testado
-//Adciona na matriz, o barco. necessario fazer validacao se eh possivel adcionar antes.
+//Adciona na matriz, o barco. necessario fazer validacao se é possivel adcionar antes.
 void addBoatToMatrix(char matrix[8][8], struct Boat boat) {
     if (boat.direction == HORIZONTAL){
         for (int i = boat.x; i <= boat.size+boat.x-1; i++ ) {
@@ -406,16 +406,16 @@ void printBoatDetails(struct Boat boat){
 //testado
 //testa se acertou ou errou o tiro
 boolean fire(int x, int y, char matrix[8][8]){
-        bool fired = false;
-        if (matrix[y][x] == 'B') {
-            fired = true;
-            matrix[y][x] = 'C';    //acertou o tiro!
-        } else if (matrix[y][x] == 'A') {
-            matrix[y][x] = 'E';    //errou o tiro!
-        }
-        printf("TESTE TIRO %c \n", matrix[y][x]);
+		bool fired = false;
+		if (matrix[y][x] == 'B') {
+			fired = true;
+			matrix[y][x] = 'C';    //acertou o tiro!
+		} else if (matrix[y][x] == 'A') {
+			matrix[y][x] = 'E';    //errou o tiro!
+		}
+		printf("TESTE TIRO %c \n", matrix[y][x]);
   printPlayerDetails(players[1]);
-        return fired;
+		return fired;
 }
 
 //testado
@@ -433,69 +433,69 @@ void fillMatrixShots(int x, int y, char matrix[8][8], bool fired){
 //testado
 // testa se o dado ponto x,y pertence a algum barco retornando o indice do mesmo. -1 se ponto nao pertence a nenhum barco
 int getShipIndexByGivenPoint(int x, int y, struct Boat boats[7]) {
-    for (int k = 0; k < 7; k++){
-        switch (boats[k].direction){
-            case HORIZONTAL:
-                for (int i = boats[k].x; i < (boats[k].x + boats[k].size); i++){
-                    if((x == i) && (y == boats[k].y)){
-                        return k;
-                        break;    
-                    }
-                }
-                break;
-            case VERTICAL:
-                for (int i = boats[k].y; i < (boats[k].y + boats[k].size); i++){
-                    if((x == boats[k].x) && (y == i)){
-                        return k;
-                        break;    
-                    }
-                }
-                break;
-        }
-    }
-    return -1;   //boat not found!
+	for (int k = 0; k < 7; k++){
+		switch (boats[k].direction){
+			case HORIZONTAL:
+				for (int i = boats[k].x; i < (boats[k].x + boats[k].size); i++){
+					if((x == i) && (y == boats[k].y)){
+						return k;
+						break;	
+					}
+				}
+				break;
+			case VERTICAL:
+				for (int i = boats[k].y; i < (boats[k].y + boats[k].size); i++){
+					if((x == boats[k].x) && (y == i)){
+						return k;
+						break;	
+					}
+				}
+				break;
+		}
+	}
+	return -1;   //boat not found!
 }
 
 
 //testa se o navio afundou
 //testado
 bool isSunkenShip(struct Boat *boat, char matrix[8][8]){
-    if (!boat->sunken){
-        switch (boat->direction){
-            case HORIZONTAL:
-                for (int i = boat->x; i < (boat->x + boat->size); i++){
-                    if(matrix[boat->y][i] == 'B'){
-                        //boat.sunken = false;
-                        return false;
-                        break;    
-                    }
-                }
-                boat->sunken = true;
-                return boat->sunken;
-                break;
-            case VERTICAL:
-                for (int i = boat->y; i < (boat->y + boat->size); i++){
-                    if(matrix[i][boat->x] == 'B'){
-                        //boat.sunken = false;
-                        return false;
-                        break;    
-                    }
-                }
-                boat->sunken = true;
-                return boat->sunken;
-                break;
-        }
-    }
-    return boat->sunken;
+	if (!boat->sunken){
+		switch (boat->direction){
+			case HORIZONTAL:
+				for (int i = boat->x; i < (boat->x + boat->size); i++){
+					if(matrix[boat->y][i] == 'B'){
+						//boat.sunken = false;
+						return false;
+						break;	
+					}
+				}
+				boat->sunken = true;
+				return boat->sunken;
+				break;
+			case VERTICAL:
+				for (int i = boat->y; i < (boat->y + boat->size); i++){
+					if(matrix[i][boat->x] == 'B'){
+						//boat.sunken = false;
+						return false;
+						break;	
+					}
+				}
+				boat->sunken = true;
+				return boat->sunken;
+				break;
+		}
+	}
+	return boat->sunken;
 }
 //testado
 bool noMoreBoats(struct Player player){
-    
-    return player.availableBoats < 1;   //todos os barcos foram afundados
+	
+	return player.availableBoats < 1;   //todos os barcos foram afundados
 }
 
 //testado
 void changeCurrentPlayer(struct Player players[2]){
-     players[0].currentPlayer = !players[0].currentPlayer;
-      players[1].currentPlayer = !players[1].currentPlayer;    
+ 	players[0].currentPlayer = !players[0].currentPlayer;
+  	players[1].currentPlayer = !players[1].currentPlayer;	
   }

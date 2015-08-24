@@ -1,34 +1,42 @@
-#include <stdio.h>
-#include <ctype.h>
+#include <LedControl.h>
+#include <ScrollTest4MAX2.h>
+#include <SPI.h>
+#include <SD.h>  
+#include <TMRpcm.h> 
+#include "charLibrary.h"
+#include "messages.h"
 
+//DEFINES
+#define DIM 8
+#define SD_ChipSelectPin 53  //example uses hardware SS pin 53 on Mega2560
+#define SPEAKER_PIN 46   //pino de saida para autofalante
 #define HORIZONTAL 'H'
 #define VERTICAL 'V'
 #define AGUA 'A' 
 #define BARCO 'B'  
 #define TIRO_CERTO 'C'
 #define TIRO_ERRADO 'E'
-#define DIM 8
 #define QTD_PLAYERS 2
 #define MAX_BOATS 2
 
-//typedef int bool;
-typedef enum { false, true } boolean;
 
-// criando tipo bool
-typedef int bool;
-#define true 1
-#define false 0
 
-/* Tamanho do barco = indice + 1
-a[0] = "Hidroaviao";     // 2 por player
-a[1] = "Submarino";      // 2 por player
-a[2] = "Cruzador";       // 1 por player
-a[3] = "Encouracado";   // 1 por player
-a[4] = "Porta Aviao";   // 1 por player
-*/
+
+// *CONSTANTS
+const int DIN_1 = 12;            //DataIn pin (18)
+const int CLK_1 = 11;            //Clock pin (17)
+const int CS_1 = 10;           //Load pin (16)
+const int DEVICES_PLAYER_1 = 2;      //duas matrizes para o player 1
+//definir os pinos da matriz do player 2:
+const int DIN_2 = 9; //TESTAR?           //DataIn pin (18)
+const int CLK_2 = 8; //TESTAR?          //Clock pin (17)
+const int CS_2 = 7; //TESTAR??          //Load pin (16)
+const int DEVICES_PLAYER_2 = 2;      //duas matrizes para o player 2
+
+const long scrollDelay = 100;
 const char *boatDetails[5] = {"Hidroaviao", "Submarino", "Cruzador", "Encouracado", "Porta Aviao"};   
 
-
+// STRUCTS
 struct Boat {
     int x;   //x e y sao as coordenadas iniciais do barco
     int y;
@@ -52,34 +60,157 @@ struct Player{
     int availableBoats;  //quantidade de barcos no tabuleiro
 };
 
-//function declaratioins
-void startGame();
-void initializePlayer(struct Player *player, int *playerIndex);
-bool addBoat(struct Player *player,int x, int y, int size, char direction, char **message);
-bool isValidBoatSize(int boatSize);
-bool isBoatAvailable(struct Player player, int boatSize);
-bool isValidBoatPlace(int x, int y, int boatSize, char direction , struct Player player);
-void addBoatToMatrix(char matrix[DIM][DIM], struct Boat boat);
-void incrementBoatCount(struct Player *player, int boatSize);
-void decrementBoatCount(struct Player *player, int boatSize);
-void ResetMatrix(char matrix[DIM][DIM]);
-void printMatrix(char matrix[DIM][DIM]);
-void printPlayerDetails(struct Player player);
-void printBoatDetails(struct Boat boat);
-bool verifyDirection(char direction);
-boolean fire(int x, int y, char matrix[8][8]);
-void fillMatrixShots(int x, int y, char matrix[8][8], bool fired);
-int getShipIndexByGivenPoint(int x, int y, struct Boat boats[7]) ;
-bool isSunkenShip(struct Boat *boat, char matrix[8][8]);
-bool noMoreBoats(struct Player player);
-void changeCurrentPlayer(struct Player players[2]);
+//VARIAVEIS DO JOGO
+//LedControl lc_player1 = LedControl(DIN_1,CLK_1,CS_1,DEVICES_PLAYER_1);
+//ScrollTest4MAX2 sc_player1 = ScrollTest4MAX2(&lc_player1,scrollDelay);
+//LedControl lc_player2 = LedControl(DIN_2,CLK_2,CS_2,DEVICES_PLAYER_2);
+//ScrollTest4MAX2 sc_player2 = ScrollTest4MAX2(&lc_player2,scrollDelay);
 
-//variable declarations
+LedControl lc_players[2] = {LedControl(DIN_1,CLK_1,CS_1,DEVICES_PLAYER_1),LedControl(DIN_2,CLK_2,CS_2,DEVICES_PLAYER_2)};
+ScrollTest4MAX2 sc_players[2] = {ScrollTest4MAX2(&lc_players[0],scrollDelay),ScrollTest4MAX2(&lc_players[1],scrollDelay)};
+TMRpcm tmrpcm;   // objeto de manipulacao de audio
+char mychar;
 int playerIndex;
 char *message;
 struct Player players[QTD_PLAYERS]; //array de jogadores
 
-int main (int argc, char** argv)
+
+void setup() {
+    Serial.begin(9600);
+    for (int i = 0; i < 2; i++){
+       lc_players[i].shutdown(0,false);
+       lc_players[i].clearDisplay(0);
+    }    
+    randomSeed(analogRead(A0));  
+    tmrpcm.speakerPin = SPEAKER_PIN; //
+    if (!SD.begin(SD_ChipSelectPin)) {  // inicializando o SDcard
+        Serial.println("SD fail");
+    } else {
+      Serial.println("Initialization Done!");  
+    }
+    tmrpcm.setVolume(5);
+    tmrpcm.play("pacman.wav"); //the sound file "music" will play each time the arduino powers up, or is reset
+}
+
+void loop() {
+  //sc.scrollMessage(scrollText);   //TESTANDO SCROOL MESSAGE
+  //tmrpcm.play("pacman.wav");    TESTANDO AUDIO
+  int choosed = chooseFirstPlayer();
+  if (choosed ==1){
+    Serial.println(PLAYER_1_COMECA);
+  }else {
+    Serial.println(PLAYER_2_COMECA);
+  }
+}
+
+//################  METODOS PARA ESCOLHA DO FIRST PLAYER (RETIRADOD DE TESTRANDOM.INO) ################ 
+
+//algoritmo para escolha de quem começa a jogar
+//int chooseFirstPlayer(){
+int chooseFirstPlayer(){
+  long p1Number = 0L;
+  long p2Number = 0L;
+  int choosedplayer = 1;
+  while (p1Number == p2Number) {
+    Serial.println(PLAYER_1_READY);
+    //while (digitalRead(buttonPlayer1) == LOW) {
+    for (int i = 0; i < 30; i++){
+      generateAndShowNumber(1,&p1Number);
+    }
+    // mostra o numero obtido pelo p1:
+    Serial.println(PLAYER_1_NUMBER_CHOOSED);
+    Serial.println(p1Number);
+    piscaNumeroDisplay(1, p1Number);
+
+    Serial.println(PLAYER_2_READY);
+    //while (digitalRead(buttonPlayer2) == LOW) {
+    for (int i = 0; i < 30; i++){
+      generateAndShowNumber(2,&p2Number);
+    }
+    // mostra o numero obtido pelo p2:
+    Serial.println(PLAYER_2_NUMBER_CHOOSED);
+    Serial.println(p2Number);
+    piscaNumeroDisplay(2, p2Number);
+
+    if (p1Number == p2Number){
+      Serial.println(EMPATE);
+    }
+  }
+  if (p1Number > p2Number) {
+    Serial.println(PLAYER_1_COMECA);
+   // p1.currentPlayer = true;
+   // p2.currentPlayer = false;
+     choosedplayer = 1;
+  } else {
+    Serial.println(PLAYER_1_COMECA);
+   // p2.currentPlayer = true;
+    //p1.currentPlayer = false;
+    choosedplayer = 2;
+  } 
+  delay(1000);
+  return choosedplayer;
+}
+
+void generateAndShowNumber(int player, long *number){ 
+  *number = random(10);
+  Serial.println("random: ");
+  Serial.println(*number);
+  mostraNumeroDisplay( 1,*number);
+}
+
+void mostraNumeroDisplay(int display, long numero){
+  printLetter(numbers[((int)numero)]);
+  delay(50);
+}
+
+void piscaNumeroDisplay(int display, long numero){
+  for (int i = 0; i < 5; i++) {
+    printLetter(numbers[((int)numero)]);
+    delay(500);
+    lc_players[0].clearDisplay(0);
+    lc_players[1].clearDisplay(0);
+    delay(500);
+  }
+}
+
+void printLetter(const byte letter[7]){
+  for (int i = 0; i < 7; i++) {    
+      lc_players[0].setRow(0,i,letter[i]);
+      lc_players[1].setRow(0,i,letter[i]);
+  }
+}
+
+
+//################ METODOS PARA IMPRIMIR A MATRIZ DE BARCOS (RETIRADOD DE TESTLEDMATRIX2.INO) ################ 
+
+int intPow(int x, int pow)
+{
+    int ret = 1;
+    while ( pow != 0 )
+    {
+        if ( (pow & 1) == 1 )
+            ret *= x;
+        x *= x;
+        pow >>= 1;
+    }
+    return ret;
+}
+
+void setLCMatrix(char matrix[DIM][DIM], LedControl lc){
+  for (int row = 0; row < DIM; row++){
+    int rowValue = 0;
+    for (int col = 0; col < DIM ; col++){
+      if(matrix[row][col] == 'B') {
+        rowValue += intPow(2, (7-col));  //calcula o valor decimal correspondente à linha.
+      }
+    }
+    lc.setRow(0,row,rowValue); //ligando os leds correspondentes à linha 'row'
+  } 
+}
+
+// ################ METODOS DO JOGO (RETIRADOD DE TESTLEDMATRIX2.INO) ################ 
+// VAI PARA DENTRO DO LOOP
+void mainGame ()
 {
     playerIndex = 1;
     message = "";
@@ -123,12 +254,12 @@ int main (int argc, char** argv)
     }
     fillMatrixShots(x,y,players[0].matrixShots, fired);
     printPlayerDetails(players[0]);
-    return (0);
 }
 
-//testado
+
+//testado   //ALTERAR PARA USAR OS BOTOES
 void startGame(){
-    for (int i = 0; i < QTD_PLAYERS; i++) {
+ /*   for (int i = 0; i < QTD_PLAYERS; i++) {
         initializePlayer(&players[i], &playerIndex);
         printPlayerDetails(players[i]);    
         while (players[i].availableBoats < MAX_BOATS) {
@@ -156,7 +287,7 @@ void startGame(){
                 printPlayerDetails(players[i]);
             }
         }
-    } 
+    } */
 }
 
 //testado
@@ -357,22 +488,22 @@ void ResetMatrix(char matrix[8][8]){
 
 //testado
 void printMatrix(char matrix[8][8]){
-    printf("[ ");
+    Serial.print("[ ");
     for (int row = 0; row < DIM; row++) {
-      for (int col = 0; col < DIM ; col++) {  
-          printf("%c", matrix[row][col]);
-          if((row < DIM -1) || (col < DIM -1)){
-              printf(",");
-          }
-      }
-      if (row < DIM -1) {
-          printf("\n  ");
-      }
+        for (int col = 0; col < DIM ; col++) {  
+            Serial.print(matrix[row][col]);
+            if((row < DIM -1) || (col < DIM -1)){
+                Serial.print(",");
+            }
+        }
+        if (row < DIM -1) {
+            Serial.print("\n  ");
+        }
     }
-    printf(" ]\n");  
+    Serial.println(" ]");   
 }
 
-//testado
+//testado   //ALTERAR PARA SERIAL!!
 void printPlayerDetails(struct Player player){
 
     printf("Player %d details: \n", player.playerIndex);
@@ -391,7 +522,7 @@ void printPlayerDetails(struct Player player){
     printf("player.availableBoats: %d\n", player.availableBoats);
 }
 
-//testado
+//testado //ALTERAR PARA SERIAL!!
 void printBoatDetails(struct Boat boat){
 
     printf("Boat details: \n");
@@ -406,16 +537,16 @@ void printBoatDetails(struct Boat boat){
 //testado
 //testa se acertou ou errou o tiro
 boolean fire(int x, int y, char matrix[8][8]){
-        bool fired = false;
-        if (matrix[y][x] == 'B') {
-            fired = true;
-            matrix[y][x] = 'C';    //acertou o tiro!
-        } else if (matrix[y][x] == 'A') {
-            matrix[y][x] = 'E';    //errou o tiro!
-        }
-        printf("TESTE TIRO %c \n", matrix[y][x]);
-  printPlayerDetails(players[1]);
-        return fired;
+    bool fired = false;
+    if (matrix[y][x] == 'B') {
+        fired = true;
+        matrix[y][x] = 'C';    //acertou o tiro!
+    } else if (matrix[y][x] == 'A') {
+        matrix[y][x] = 'E';    //errou o tiro!
+    }
+    // printf("TESTE TIRO %c \n", matrix[y][x]);
+    printPlayerDetails(players[1]);
+    return fired;
 }
 
 //testado
@@ -490,12 +621,12 @@ bool isSunkenShip(struct Boat *boat, char matrix[8][8]){
 }
 //testado
 bool noMoreBoats(struct Player player){
-    
     return player.availableBoats < 1;   //todos os barcos foram afundados
 }
 
 //testado
 void changeCurrentPlayer(struct Player players[2]){
-     players[0].currentPlayer = !players[0].currentPlayer;
-      players[1].currentPlayer = !players[1].currentPlayer;    
-  }
+    players[0].currentPlayer = !players[0].currentPlayer;
+    players[1].currentPlayer = !players[1].currentPlayer;    
+}
+
