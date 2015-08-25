@@ -275,6 +275,7 @@ void mainGame ()
     while (!gameOver) {
       for (int i = 0; i < QTD_PLAYERS; i++) {
           setLCMatrix(players[i].matrixBoats, lc_players[i], 0);
+          setLCMatrix(players[i].matrixShots, lc_players[i], 1);
       }
       gameOver = attackHour(players[0].currentPlayer ? 0:1);
     }
@@ -358,7 +359,7 @@ bool attackHour(int currentPlayer){
         } else {
           printMirroredMessage(JOGO_CONTINUA_1);
         }
-        changeCurrentPlayer(players);
+        //changeCurrentPlayer(players);
       }
     } else {
       Serial.print("Barco NAO afundou!!!!!!!!\n");
@@ -370,16 +371,19 @@ bool attackHour(int currentPlayer){
       } else {
         printMirroredMessage(JOGO_CONTINUA_1);
       }
-      changeCurrentPlayer(players);
+      //changeCurrentPlayer(players);
     }
     printPlayerDetails(players[currentDefender]);
-  }
-  else{
+  } else{
     Serial.println("ERROU!!!!!!!!");
     printMirroredMessage(ERROU);
+    //changeCurrentPlayer(players);
   }
   fillMatrixShots(x,y,players[currentPlayer].matrixShots, fired);
   printPlayerDetails(players[currentPlayer]);
+  if (!gameOver){
+    changeCurrentPlayer(players);
+  }
   
   
   
