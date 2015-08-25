@@ -251,7 +251,9 @@ void setLCMatrix(char matrix[DIM][DIM], LedControl lc, int whatMatrix){
   for (int row = 0; row < DIM; row++){
     int rowValue = 0;
     for (int col = 0; col < DIM ; col++){
-      if(matrix[row][col] == 'B') {
+      if((matrix[row][col] == 'B') && (whatMatrix == 0)) {
+        rowValue += intPow(2, (7-col));  //calcula o valor decimal correspondente à linha.
+      } else if (((matrix[row][col] == 'C') && (whatMatrix == 1)) || ((matrix[row][col] == 'E') && (whatMatrix == 1))){ 
         rowValue += intPow(2, (7-col));  //calcula o valor decimal correspondente à linha.
       }
     }
@@ -332,9 +334,10 @@ bool attackHour(int currentPlayer){
     Serial.print("y: ");Serial.print(y);Serial.print("\n");
   
     int currentDefender = getCurrentDefender();
-    bool fired = fire(x,y, players[currentDefender].matrixBoats);
+    bool fired = fire(y,x, players[currentDefender].matrixBoats);
   if (fired){
     int k =  getShipIndexByGivenPoint(x, y, players[currentDefender].boats);    
+    tmrpcm.play("boom2.wav");
     Serial.print("ACERTOU!!!!!!!!  Barco index: ");Serial.print(k);Serial.print("\n");    
     printMirroredMessage(ACERTOU);
     if (isSunkenShip(&players[currentDefender].boats[k], players[currentDefender].matrixBoats)){
@@ -344,6 +347,7 @@ bool attackHour(int currentPlayer){
       decrementBoatCount(&players[currentDefender], players[currentDefender].boats[k].size);
       players[currentDefender].availableBoats --;
       if(noMoreBoats(players[currentDefender])){
+        tmrpcm.play("game_over2.wav");
         Serial.print("JOGO ACABOU!! Player "); Serial.print(players[0].currentPlayer ? 1:2);Serial.print(" ganhou\n");
         printMirroredMessage(JOGO_ACABOU);
         if(players[0].currentPlayer){
@@ -375,6 +379,7 @@ bool attackHour(int currentPlayer){
     }
     printPlayerDetails(players[currentDefender]);
   } else{
+    tmrpcm.play("6.wav");
     Serial.println("ERROU!!!!!!!!");
     printMirroredMessage(ERROU);
     //changeCurrentPlayer(players);
