@@ -100,8 +100,8 @@ void setup() {
         Serial.println("Initialization Done!"); 
     }
     Serial.println("comecou3");
-    //tmrpcm.setVolume(5);
-    //tmrpcm.play("pacman.wav"); //the sound file "music" will play each time the arduino powers up, or is reset
+    tmrpcm.setVolume(5);
+    tmrpcm.play("pacman.wav"); //the sound file "music" will play each time the arduino powers up, or is reset
             
     for(int i=0; i<6;i++){
       pinMode(botoes[i], INPUT);

@@ -71,6 +71,14 @@ void loop(){
       Serial.println("i choosed");
       tmrpcm.play("whyhere.wav");
     }
+    else if(mychar == 'd'){ //send the letter p over the serial monitor to start playback
+      Serial.println("d choosed");
+      tmrpcm.play("boom.wav");
+    }
+    else if(mychar == 'b'){ //send the letter p over the serial monitor to start playback
+      Serial.println("b choosed");
+      tmrpcm.play("game_over.wav");
+    }
   }
 
 }
