@@ -294,33 +294,33 @@ bool attackHour(int currentPlayer){
     lc_players[currentPlayer].setLed(1,x,y,true);
   
     //solicitando x e y
-    allBtState[(currentPlayer * 3) + 3] = digitalRead(botoes[(currentPlayer * 3) + 3]);
-    while (allBtState[(currentPlayer * 3) + 3] == HIGH) {
-        allBtState[(currentPlayer * 3) + 1] = digitalRead(botoes[(currentPlayer * 3) + 1]);  //lendo botao X do player i+1
-        if (allBtState[(currentPlayer * 3) + 1] == LOW) {
+    allBtState[(currentPlayer * 3) + 2] = digitalRead(botoes[(currentPlayer * 3) + 2]);
+    while (allBtState[(currentPlayer * 3) + 2] == HIGH) {
+        allBtState[(currentPlayer * 3) + 0] = digitalRead(botoes[(currentPlayer * 3) + 0]);  //lendo botao X do player i+1
+        if (allBtState[(currentPlayer * 3) + 0] == LOW) {
             Serial.print("Botao X do player ");Serial.print(currentPlayer + 1);Serial.print(" pressionado\n");
             if(y < 7){
                 y++;
             } else {
                 y = 0;
             }
-            lc_players[currentPlayer].clearDisplay(0);
+            lc_players[currentPlayer].clearDisplay(1);
             lc_players[currentPlayer].setLed(1,x,y,true);
             delay(500);  
         }
-        allBtState[(currentPlayer * 3) + 2] = digitalRead(botoes[(currentPlayer * 3) + 2]);  //lendo botao Y do player i+1
-        if (allBtState[(currentPlayer * 3) + 2] == LOW) {
+        allBtState[(currentPlayer * 3) + 1] = digitalRead(botoes[(currentPlayer * 3) + 1]);  //lendo botao Y do player i+1
+        if (allBtState[(currentPlayer * 3) + 1] == LOW) {
             Serial.print("Botao Y do player ");Serial.print(currentPlayer + 1);Serial.print(" pressionado\n");
             if(x < 7){
                 x++;
             } else {
                 x = 0;
             }
-            lc_players[currentPlayer].clearDisplay(0);
+            lc_players[currentPlayer].clearDisplay(1);
             lc_players[currentPlayer].setLed(1,x,y,true);
             delay(500);  
         }
-        allBtState[(currentPlayer * 3) + 3] = digitalRead(botoes[(currentPlayer * 3) + 3]);
+        allBtState[(currentPlayer * 3) + 2] = digitalRead(botoes[(currentPlayer * 3) + 2]);
       /*if (bt3State == LOW) {
             Serial.println("Botao 3 pressionado");
             delay(100);
@@ -480,11 +480,11 @@ void startGame(){
             lc_players[i].setLed(0,x0,y0,true);
       
             //solicitando x0 e y0
-            allBtState[(i * 3) + 3] = digitalRead(botoes[(i * 3) + 3]);
+            allBtState[(i * 3) + 2] = digitalRead(botoes[(i * 3) + 2]);
             //solicitando x0 e y0
-            while (allBtState[(i * 3) + 3] == HIGH) {
-                allBtState[(i*3) + 1] = digitalRead(botoes[(i*3) + 1]);  //lendo botao X do player i+1
-                if (allBtState[(i*3) + 1] == LOW) {
+            while (allBtState[(i * 3) + 2] == HIGH) {
+                allBtState[(i*3) + 0] = digitalRead(botoes[(i*3) + 0]);  //lendo botao X do player i+1
+                if (allBtState[(i*3) + 0] == LOW) {
                     Serial.print("Botao X do player ");Serial.print(i+1);Serial.print(" pressionado\n");
                     if(y0 < 7){
                        y0++;
@@ -497,8 +497,8 @@ void startGame(){
                     lc_players[i].setLed(0,x0,y0,true);
                     delay(500);  
                 }
-                allBtState[(i*3) + 2] = digitalRead(botoes[(i*3) + 2]);  //lendo botao Y do player i+1
-                if (allBtState[(i*3) + 2] == LOW) {
+                allBtState[(i*3) + 1] = digitalRead(botoes[(i*3) + 1]);  //lendo botao Y do player i+1
+                if (allBtState[(i*3) + 1] == LOW) {
                     Serial.print("Botao Y do player ");Serial.print(i+1);Serial.print(" pressionado\n");
                     if(x0 < 7){
                         x0++;
@@ -511,7 +511,7 @@ void startGame(){
                     lc_players[i].setLed(0,x0,y0,true);
                   delay(500);  
                 }
-                allBtState[(i * 3) + 3] = digitalRead(botoes[(i * 3) + 3]);
+                allBtState[(i * 3) + 2] = digitalRead(botoes[(i * 3) + 2]);
                 /*if (bt3State == LOW) {
                   Serial.println("Botao 3 pressionado");
                   delay(100);
@@ -521,13 +521,13 @@ void startGame(){
             Serial.println("saiu! Botao ENTER do player ");Serial.print(i+1);Serial.print(" pressionado\n");
 
             //pegando agora o tamanho 
-            allBtState[(i * 3) + 3] = digitalRead(botoes[(i * 3) + 3]);
+            allBtState[(i * 3) + 2] = digitalRead(botoes[(i * 3) + 2]);
             direction = HORIZONTAL;
             bool changeDirectionToVertical = false;
             bool changeDirectionToHorizontal = false;
-            while (allBtState[(i * 3) + 3] == HIGH) {
-                allBtState[(i*3) + 1] = digitalRead(botoes[(i*3) + 1]);  //lendo botao X do player i+1
-                if ((allBtState[(i*3) + 1] == LOW) && (!changeDirectionToVertical)) {
+            while (allBtState[(i * 3) + 2] == HIGH) {
+                allBtState[(i*3) + 0] = digitalRead(botoes[(i*3) + 0]);  //lendo botao X do player i+1
+                if ((allBtState[(i*3) + 0] == LOW) && (!changeDirectionToVertical)) {
                     changeDirectionToHorizontal = true;  
                     if(y1 < 7){
                         y1++;
@@ -536,8 +536,8 @@ void startGame(){
                     lc_players[i].setLed(0,x0,y1,true);
                     delay(500);
                 }
-                allBtState[(i*3) + 2] = digitalRead(botoes[(i*3) + 2]);  //lendo botao X do player i+1
-                if ((allBtState[(i*3) + 2] == LOW) && (!changeDirectionToHorizontal)) {  
+                allBtState[(i*3) + 1] = digitalRead(botoes[(i*3) + 1]);  //lendo botao X do player i+1
+                if ((allBtState[(i*3) + 1] == LOW) && (!changeDirectionToHorizontal)) {  
                     changeDirectionToVertical = true;
                     direction = VERTICAL;
                     if(x1 < 7){
@@ -547,7 +547,7 @@ void startGame(){
                     lc_players[i].setLed(0,x1,y1,true);
                     delay(500);
                 }
-                allBtState[(i * 3) + 3] = digitalRead(botoes[(i * 3) + 3]);
+                allBtState[(i * 3) + 2] = digitalRead(botoes[(i * 3) + 2]);
             }
             delay(100);
             Serial.println("saiu novamente! Botao ENTER do player ");Serial.print(i+1);Serial.print(" pressionado\n");
