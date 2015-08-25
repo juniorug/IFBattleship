@@ -14,7 +14,7 @@
 
 
 static const unsigned char PLAYER_1_ADD_BOAT[] PROGMEM = {"Player 1 adcione 7 barcos \0"};
-static const unsigned char PLAYER_2_ADD_BOAT[] PROGMEM = {"Player 2 adcione 7 barcos \0"};
+static const unsigned char PLAYER_2_ADD_BOAT[] PROGMEM = "Player 2 adcione 7 barcos \0"};
 static const char *PLAYER_1_READY = "Player 1 ready?";
 static const char *PLAYER_2_READY = "Player 1 ready?";
 static const char *PLAYER_1_NUMBER_CHOOSED = "Player 1 number choosed:";

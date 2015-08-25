@@ -14,16 +14,19 @@ char matrix[8][8] = { { 'A','A','A','A','A','A','A','A' },
             { 'A','A','A','A','A','A','A','A' }
           };
 
+//LedControl lc = LedControl(9,8,7,2);
 LedControl lc = LedControl(12,11,10,1);
 
 void setup(){
   lc.shutdown(0,false);
+  //lc.shutdown(1,false);
   lc.clearDisplay(0);
+  //lc.clearDisplay(1);
   Serial.begin(9600);
 }
 
 void loop(){
- /* printMatrix();
+  printMatrix();
   acendeTodosUmPorUm();
   printMatrix();
   apagaTodosUmPorUm();
@@ -31,11 +34,11 @@ void loop(){
   acendeUmApagaAnterior();
   clearMatrix();
   printMatrix();
-  delay(100);*/
-  printLetter(char_4);
+  delay(100);
+ /* printLetter(char_4);
   delay(500);
   clearMatrix();
-  delay(500);
+  delay(500);*/
 }
 
 void printLetter(const byte letter[7]){
@@ -81,6 +84,7 @@ void acendeUmApagaAnterior() {
     }
   }
   lc.clearDisplay(0);
+  //lc.clearDisplay(1);
 }
 
 void setLCMatrix(){
@@ -116,6 +120,7 @@ void clearMatrix(){
     }
   }
   lc.clearDisplay(0);
+  //lc.clearDisplay(1);
 }
 
 

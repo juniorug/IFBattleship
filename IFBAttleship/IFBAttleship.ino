@@ -36,6 +36,14 @@ const int DEVICES_PLAYER_2 = 2;      //duas matrizes para o player 2
 const long scrollDelay = 100;
 const char *boatDetails[5] = {"Hidroaviao", "Submarino", "Cruzador", "Encouracado", "Porta Aviao"};   
 
+const int bt1 = 2;     // the number of the pushbutton pin
+const int bt2 = 3;
+const int bt3 = 4;
+const int bt4 = 5;
+const int bt5 = A7;
+const int bt6 = A6;
+const int botoes[6] = {bt1,bt2,bt3,bt4,bt5,bt6};
+
 // STRUCTS
 struct Boat {
     int x;   //x e y sao as coordenadas iniciais do barco
@@ -74,12 +82,20 @@ int playerIndex;
 char *message;
 struct Player players[QTD_PLAYERS]; //array de jogadores
 
+int bt1State = 0;         // variable for reading the pushbutton status
+int bt2State = 0;         // variable for reading the pushbutton status
+int b3State = 0;         // variable for reading the pushbutton status
+int b4State = 0;         // variable for reading the pushbutton status
+int b5State = 0;         // variable for reading the pushbutton status
+int b6State = 0;         // variable for reading the pushbutton status
 
 void setup() {
     Serial.begin(9600);
     for (int i = 0; i < 2; i++){
        lc_players[i].shutdown(0,false);
        lc_players[i].clearDisplay(0);
+       lc_players[i].shutdown(1,false);
+       lc_players[i].clearDisplay(1);
     }    
     randomSeed(analogRead(A0));  
     tmrpcm.speakerPin = SPEAKER_PIN; //
@@ -90,17 +106,21 @@ void setup() {
     }
     tmrpcm.setVolume(5);
     tmrpcm.play("pacman.wav"); //the sound file "music" will play each time the arduino powers up, or is reset
+    for(int i=0; i<6;i++){
+      pinMode(botoes[i], INPUT);
+    }
 }
 
 void loop() {
   //sc.scrollMessage(scrollText);   //TESTANDO SCROOL MESSAGE
   //tmrpcm.play("pacman.wav");    TESTANDO AUDIO
-  int choosed = chooseFirstPlayer();
+  /*int choosed = chooseFirstPlayer();
   if (choosed ==1){
     Serial.println(PLAYER_1_COMECA);
   }else {
     Serial.println(PLAYER_2_COMECA);
-  }
+  }*/
+  mainGame ();
 }
 
 //################  METODOS PARA ESCOLHA DO FIRST PLAYER (RETIRADOD DE TESTRANDOM.INO) ################ 
@@ -259,12 +279,21 @@ void mainGame ()
 
 //testado   //ALTERAR PARA USAR OS BOTOES
 void startGame(){
- /*   for (int i = 0; i < QTD_PLAYERS; i++) {
+    for (int i = 0; i < QTD_PLAYERS; i++) {
+      if (i == 0){
+          sc_players[i].scrollMessage(PLAYER_1_ADD_BOAT);
+          delay(5000);  
+      } else {
+          sc_players[i].scrollMessage(PLAYER_2_ADD_BOAT);
+          delay(5000);
+      }
         initializePlayer(&players[i], &playerIndex);
         printPlayerDetails(players[i]);    
         while (players[i].availableBoats < MAX_BOATS) {
             int x,y,boatSize;
-            char direction;  
+            char direction;
+            
+            /*
             printf("\nDigite a posicao X inicial do barco %d (0-%d): ", players[i].availableBoats + 1, MAX_BOATS);
             scanf("%d", &x);
             
@@ -286,8 +315,9 @@ void startGame(){
                 printBoatDetails(players[i].boats[players[i].availableBoats -1]);    
                 printPlayerDetails(players[i]);
             }
+            */
         }
-    } */
+    } 
 }
 
 //testado
@@ -629,4 +659,5 @@ void changeCurrentPlayer(struct Player players[2]){
     players[0].currentPlayer = !players[0].currentPlayer;
     players[1].currentPlayer = !players[1].currentPlayer;    
 }
+
 
