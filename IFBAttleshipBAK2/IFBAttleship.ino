@@ -88,7 +88,6 @@ int bt3State = 0;         // variable for reading the pushbutton status
 int bt4State = 0;         // variable for reading the pushbutton status
 int bt5State = 0;         // variable for reading the pushbutton status
 int bt6State = 0;         // variable for reading the pushbutton status
-int allBtState[6] = {bt1State,bt2State,bt3State,bt4State,bt5State,bt6State};
 
 void setup() {
     Serial.begin(9600);
@@ -101,7 +100,7 @@ void setup() {
     if (!SD.begin(SD_ChipSelectPin)) {  // inicializando o SDcard
         Serial.println("SD fail");
     } else {
-      Serial.println("Initialization Done!"); 
+      Serial.println("Initialization Done!");  
     }
     Serial.println("comecou3");
    //tmrpcm.setVolume(5);
@@ -122,14 +121,7 @@ void loop() {
     Serial.println(PLAYER_2_COMECA);
   }*/
   mainGame ();
-  int playerBegin = chooseFirstPlayer();
-  bool gameOver = false;
-  while (!gameOver) {
-    for (int i = 0; i < QTD_PLAYERS; i++) {
-      setLCMatrix(players[i].matrixBoats, lc_players[i], 0);
-    }
-    gameOver = attackHour(players[0].currentPlayer ? 0:1);
-  }
+  chooseFirstPlayer();
 }
 void clearDisplays(){
   for (int i = 0; i < 2; i++){
@@ -252,8 +244,8 @@ int intPow(int x, int pow)
     }
     return ret;
 }
-// whatMatrix = 0 -> matriz de barco; whatMatrix = 1 -> matriz de tiro
-void setLCMatrix(char matrix[DIM][DIM], LedControl lc, int whatMatrix){
+
+void setLCMatrix(char matrix[DIM][DIM], LedControl lc){
   for (int row = 0; row < DIM; row++){
     int rowValue = 0;
     for (int col = 0; col < DIM ; col++){
@@ -261,7 +253,7 @@ void setLCMatrix(char matrix[DIM][DIM], LedControl lc, int whatMatrix){
         rowValue += intPow(2, (7-col));  //calcula o valor decimal correspondente à linha.
       }
     }
-    lc.setRow(whatMatrix,row,rowValue); //ligando os leds correspondentes à linha 'row'
+    lc.setRow(0,row,rowValue); //ligando os leds correspondentes à linha 'row'
   } 
 }
 
@@ -275,113 +267,60 @@ void mainGame ()
     Serial.println("antes do start");
     startGame();
     Serial.println("\nTodos os barcos foram adcionados!  Hora de comecar o jogo!!!\n");
-    
-}
+    /*
+    printf("Player %d digite a posicao X do tiro: ",players[0].currentPlayer ? 1:2);
+    scanf("%d", &x);
 
-bool attackHour(int currentPlayer){
-  bool gameOver = false;
-  clearButtonState();    
-  int x0 = 0;
-  int y0 = 0;
-  int boatSize = 1;
-  char direction = HORIZONTAL;
-  Serial.println("dentro do attackHour\n");
-  lc_players[currentPlayer].clearDisplay(1);
-  lc_players[currentPlayer].setLed(1,x0,y0,true);
-  
-  //solicitando x0 e y0
-  allBtState[(currentPlayer * 3) + 3] = digitalRead(botoes[(currentPlayer * 3) + 3]);
-  //solicitando x0 e y0
-  while (allBtState[(currentPlayer * 3) + 3] == HIGH) {
-    allBtState[(currentPlayer * 3) + 1] = digitalRead(botoes[(currentPlayer * 3) + 1]);  //lendo botao X do player i+1
-    if (allBtState[(currentPlayer * 3) + 1] == LOW) {
-       Serial.print("Botao X do player ");Serial.print(currentPlayer + 1);Serial.print(" pressionado\n");
-       if(y0 < 7){
-        y0++;
-       } else {
-        y0 = 0;
-       }
-       lc_players[currentPlayer].clearDisplay(0);
-       lc_players[currentPlayer].setLed(1,x0,y0,true);
-       delay(500);  
+    printf("Player %d digite a posicao Y do tiro: ",players[0].currentPlayer ? 1:2);
+    scanf("%d", &y);
+
+    printf("[X: %d] [Y: %d] \n", x, y);
+    bool fired = fire(x,y, players[1].matrixBoats);
+    if (fired){
+        int k =  getShipIndexByGivenPoint(x, y, players[1].boats);
+        
+        printf("ACERTOU!!!!!!!!  Barco index: %d\n", k);
+        if (isSunkenShip(&players[1].boats[k], players[1].matrixBoats)){
+            printf("Barco AFUNDOU!!!!!!!!\n");
+            printBoatDetails(players[1].boats[k]);
+            decrementBoatCount(&players[1], players[1].boats[k].size);
+            players[1].availableBoats --;
+            if(noMoreBoats(players[1])){
+                printf("JOGO ACABOU!! Player %d ganhou\n", players[0].currentPlayer ? 1:2);
+            } else {
+                printf("Jogo continua, agora e a vez do player %d\n", players[0].currentPlayer ? 2:1);
+                changeCurrentPlayer(players);
+            }
+        } else {
+            printf("Barco NAO afundou!!!!!!!!\n");
+            printBoatDetails(players[1].boats[k]);
+            printf("Jogo continua, agora e a vez do player %d\n", players[0].currentPlayer ? 2:1);
+            changeCurrentPlayer(players);
+        }
+        printPlayerDetails(players[1]);
     }
-    allBtState[(currentPlayer * 3) + 2] = digitalRead(botoes[(currentPlayer * 3) + 2]);  //lendo botao Y do player i+1
-    if (allBtState[(currentPlayer * 3) + 2] == LOW) {
-      Serial.print("Botao Y do player ");Serial.print(currentPlayer + 1);Serial.print(" pressionado\n");
-       if(x0 < 7){
-        x0++;
-       } else {
-        x0 = 0;
-       }
-       lc_players[currentPlayer].clearDisplay(0);
-       lc_players[currentPlayer].setLed(1,x0,y0,true);
-       delay(500);  
+    else{
+        printf("ERROU!!!!!!!!");
     }
-    allBtState[(currentPlayer * 3) + 3] = digitalRead(botoes[(currentPlayer * 3) + 3]);
-    /*if (bt3State == LOW) {
-      Serial.println("Botao 3 pressionado");
-      delay(100);
-    }*/
-  }
-  delay(200);
-  Serial.println("saiu! Botao ENTER do player ");Serial.print(currentPlayer+1);Serial.print(" pressionado\n");
-  Serial.print("x0: ");Serial.print(x0);Serial.print("\n");
-  Serial.print("y0: ");Serial.print(y0);Serial.print("\n");
-  /*
-      printf("Player %d digite a posicao X do tiro: ",players[0].currentPlayer ? 1:2);
-      scanf("%d", &x);
-
-      printf("Player %d digite a posicao Y do tiro: ",players[0].currentPlayer ? 1:2);
-      scanf("%d", &y);
-
-      printf("[X: %d] [Y: %d] \n", x, y);
-      bool fired = fire(x,y, players[1].matrixBoats);
-      if (fired){
-          int k =  getShipIndexByGivenPoint(x, y, players[1].boats);
-          
-          printf("ACERTOU!!!!!!!!  Barco index: %d\n", k);
-          if (isSunkenShip(&players[1].boats[k], players[1].matrixBoats)){
-              printf("Barco AFUNDOU!!!!!!!!\n");
-              printBoatDetails(players[1].boats[k]);
-              decrementBoatCount(&players[1], players[1].boats[k].size);
-              players[1].availableBoats --;
-              if(noMoreBoats(players[1])){
-                  printf("JOGO ACABOU!! Player %d ganhou\n", players[0].currentPlayer ? 1:2);
-              } else {
-                  printf("Jogo continua, agora e a vez do player %d\n", players[0].currentPlayer ? 2:1);
-                  changeCurrentPlayer(players);
-              }
-          } else {
-              printf("Barco NAO afundou!!!!!!!!\n");
-              printBoatDetails(players[1].boats[k]);
-              printf("Jogo continua, agora e a vez do player %d\n", players[0].currentPlayer ? 2:1);
-              changeCurrentPlayer(players);
-          }
-          printPlayerDetails(players[1]);
-      }
-      else{
-          printf("ERROU!!!!!!!!");
-      }
-      fillMatrixShots(x,y,players[0].matrixShots, fired);
-      printPlayerDetails(players[0]);
-      */
+    fillMatrixShots(x,y,players[0].matrixShots, fired);
+    printPlayerDetails(players[0]);
+    */
 }
-
 
 
 //testado   //ALTERAR PARA USAR OS BOTOES
 void startGame(){
     for (int i = 0; i < QTD_PLAYERS; i++) {
-        if (i == 0){
-            sc_players[i].scrollMessage(PLAYER_1_ADD_BOAT);
-            //delay(5000);  
-            //Serial.println("dentro do i");
-            clearDisplays(); 
-        } else {
-            sc_players[i].scrollMessage(PLAYER_2_ADD_BOAT);
-            //delay(5000);
-            clearDisplays();
-        }
+      if (i == 0){
+          //sc_players[i].scrollMessage(PLAYER_1_ADD_BOAT);
+          //delay(5000);  
+          Serial.println("dentro do i");
+          clearDisplays(); 
+      } else {
+          sc_players[i].scrollMessage(PLAYER_2_ADD_BOAT);
+          //delay(5000);
+          clearDisplays();
+      }
       
         initializePlayer(&players[i], &playerIndex);
         //printPlayerDetails(players[i]);
@@ -394,117 +333,214 @@ void startGame(){
         char direction = HORIZONTAL;
         Serial.println("antes do while\n");
         while (players[i].availableBoats < MAX_BOATS) {
-            x0 = 0;
-            y0 = 0;
-            x1 = 0;
-            y1 = 0;
-            boatSize = 1;
-            direction = HORIZONTAL;
-            lc_players[i].clearDisplay(0);
-            lc_players[i].setLed(0,x0,y0,true);
-      
-            //solicitando x0 e y0
-            allBtState[(i * 3) + 3] = digitalRead(botoes[(i * 3) + 3]);
-            //solicitando x0 e y0
-            while (allBtState[(i * 3) + 3] == HIGH) {
-                allBtState[(i*3) + 1] = digitalRead(botoes[(i*3) + 1]);  //lendo botao X do player i+1
-                if (allBtState[(i*3) + 1] == LOW) {
-                    Serial.print("Botao X do player ");Serial.print(i+1);Serial.print(" pressionado\n");
-                    if(y0 < 7){
-                       y0++;
-                       y1++;
-                    } else {
-                       y0 = 0;
-                       y1=0;
+            if (i == 0){
+                x0 = 0;
+                y0 = 0;
+                x1 = 0;
+                y1 = 0;
+                boatSize = 1;
+                direction = HORIZONTAL;
+                lc_players[i].clearDisplay(0);
+                lc_players[i].setLed(0,x0,y0,true);
+    
+                //solicitando x0 e y0
+                bt3State = digitalRead(bt3);
+                while (bt3State == HIGH) {
+                    bt1State = digitalRead(bt1);
+                    if (bt1State == LOW) {
+                         Serial.println("Botao 1 pressionado");
+                         if(y0 < 7){
+                            y0++;
+                            y1++;
+                         } else {
+                            y0 = 0;
+                            y1=0;
+                         }
+                         lc_players[i].clearDisplay(0);
+                         lc_players[i].setLed(0,x0,y0,true);
+                         delay(500);  
                     }
-                    lc_players[i].clearDisplay(0);
-                    lc_players[i].setLed(0,x0,y0,true);
-                    delay(500);  
-                }
-                allBtState[(i*3) + 2] = digitalRead(botoes[(i*3) + 2]);  //lendo botao Y do player i+1
-                if (allBtState[(i*3) + 2] == LOW) {
-                    Serial.print("Botao Y do player ");Serial.print(i+1);Serial.print(" pressionado\n");
-                    if(x0 < 7){
-                        x0++;
-                        x1++;
-                    } else {
-                       x0 = 0;
-                       x1 = 0;
+                    bt2State = digitalRead(bt2);
+                    if (bt2State == LOW) {
+                         Serial.println("Botao 2 pressionado");
+                         if(x0 < 7){
+                            x0++;
+                            x1++;
+                         } else {
+                            x0 = 0;
+                            x1 = 0;
+                         }
+                         lc_players[i].clearDisplay(0);
+                         lc_players[i].setLed(0,x0,y0,true);
+                         delay(500);  
                     }
-                    lc_players[i].clearDisplay(0);
-                    lc_players[i].setLed(0,x0,y0,true);
-                  delay(500);  
-                }
-                allBtState[(i * 3) + 3] = digitalRead(botoes[(i * 3) + 3]);
-                /*if (bt3State == LOW) {
-                  Serial.println("Botao 3 pressionado");
-                  delay(100);
-                }*/
+                    bt3State = digitalRead(bt3);
+                    /*if (bt3State == LOW) {
+                      Serial.println("Botao 3 pressionado");
+                      delay(100);
+                    }*/
+              }
+              delay(200);
+              Serial.println("saiu! Botao 3 pressionado");
+    
+              //pegando agora o tamanho 
+              bt3State = digitalRead(bt3);
+              direction = HORIZONTAL;
+              bool changeDirectionToVertical = false;
+              bool changeDirectionToHorizontal = false;
+              while (bt3State == HIGH) {
+                    bt1State = digitalRead(bt1);
+                    if ((bt1State == LOW) && (!changeDirectionToVertical)) {
+                         changeDirectionToHorizontal = true;  
+                         if(y1 < 7){
+                            y1++;
+                            boatSize++;
+                         } 
+                         lc_players[i].setLed(0,x0,y1,true);
+                         delay(500);
+                    }
+                    bt2State = digitalRead(bt2);
+                    if ((bt2State == LOW) && (!changeDirectionToHorizontal)) {  
+                         changeDirectionToVertical = true;
+                         direction = VERTICAL;
+                         if(x1 < 7){
+                            x1++;
+                            boatSize++;
+                         } 
+                         lc_players[i].setLed(0,x1,y1,true);
+                         delay(500);
+                    }
+                    bt3State = digitalRead(bt3);
+              }
+              delay(100);
+              Serial.println("saiu novamente! Botao 3 pressionado");
+              //bool addBoat(struct Player *player,int x, int y, int boatSize, char direction, char **message)
+              Serial.println("TENTANDO ADCIONAR BARCO:");
+              Serial.print("x0: ");Serial.print(x0);Serial.print("\n");
+              Serial.print("y0: ");Serial.print(y0);Serial.print("\n");
+              Serial.print("boatsize: ");Serial.print(boatSize);Serial.print("\n");
+              Serial.print("direction: ");Serial.print(direction);Serial.print("\n");
+    
+              delay(1000);
+              bool add = addBoat(&players[i],y0,x0,boatSize,direction, &message);
+              Serial.println("mensagem:");
+              Serial.println(message);
+              Serial.println("add?:");
+              Serial.println(add);
+              if (add){
+                  printPlayerDetails(players[i]);
+                  printBoatDetails(players[i].boats[0]);
+              }
+            }else if (i == 1){
+                x0 = 0;
+                y0 = 0;
+                x1 = 0;
+                y1 = 0;
+                boatSize = 1;
+                direction = HORIZONTAL;
+                lc_players[i].clearDisplay(0);
+                lc_players[i].setLed(0,x0,y0,true);
+    
+                //solicitando x0 e y0
+                bt6State = digitalRead(bt6);
+                while (bt6State == HIGH) {
+                    bt4State = digitalRead(bt4);
+                    if (bt4State == LOW) {
+                         Serial.println("Botao 4 pressionado");
+                         if(y0 < 7){
+                            y0++;
+                            y1++;
+                         } else {
+                            y0 = 0;
+                            y1=0;
+                         }
+                         lc_players[i].clearDisplay(0);
+                         lc_players[i].setLed(0,x0,y0,true);
+                         delay(500);  
+                    }
+                    bt5State = digitalRead(bt5);
+                    if (bt5State == LOW) {
+                         Serial.println("Botao 5 pressionado");
+                         if(x0 < 7){
+                            x0++;
+                            x1++;
+                         } else {
+                            x0 = 0;
+                            x1 = 0;
+                         }
+                         lc_players[i].clearDisplay(0);
+                         lc_players[i].setLed(0,x0,y0,true);
+                         delay(500);  
+                    }
+                    bt6State = digitalRead(bt6);
+                    /*if (bt3State == LOW) {
+                      Serial.println("Botao 3 pressionado");
+                      delay(100);
+                    }*/
+              }
+              delay(200);
+              Serial.println("saiu! Botao 6 pressionado");
+    
+              //pegando agora o tamanho 
+              bt6State = digitalRead(bt6);
+              direction = HORIZONTAL;
+              bool changeDirectionToVertical = false;
+              bool changeDirectionToHorizontal = false;
+              while (bt6State == HIGH) {
+                    bt4State = digitalRead(bt4);
+                    if ((bt4State == LOW) && (!changeDirectionToVertical)) {
+                         changeDirectionToHorizontal = true;  
+                         if(y1 < 7){
+                            y1++;
+                            boatSize++;
+                         } 
+                         lc_players[i].setLed(0,x0,y1,true);
+                         delay(500);
+                    }
+                    bt5State = digitalRead(bt5);
+                    if ((bt5State == LOW) && (!changeDirectionToHorizontal)) {  
+                         changeDirectionToVertical = true;
+                         direction = VERTICAL;
+                         if(x1 < 7){
+                            x1++;
+                            boatSize++;
+                         } 
+                         lc_players[i].setLed(0,x1,y1,true);
+                         delay(500);
+                    }
+                    bt6State = digitalRead(bt6);
+              }
+              delay(100);
+              Serial.println("saiu novamente! Botao 6 pressionado");
+              //bool addBoat(struct Player *player,int x, int y, int boatSize, char direction, char **message)
+              Serial.println("TENTANDO ADCIONAR BARCO:");
+              Serial.print("x0: ");Serial.print(x0);Serial.print("\n");
+              Serial.print("y0: ");Serial.print(y0);Serial.print("\n");
+              Serial.print("boatsize: ");Serial.print(boatSize);Serial.print("\n");
+              Serial.print("direction: ");Serial.print(direction);Serial.print("\n");
+    
+              delay(1000);
+              bool add = addBoat(&players[i],y0,x0,boatSize,direction, &message);
+              Serial.println("mensagem:");
+              Serial.println(message);
+              Serial.println("add?:");
+              Serial.println(add);
+              if (add){
+                  printPlayerDetails(players[i]);
+                  printBoatDetails(players[i].boats[0]);
+              }
             }
-            delay(200);
-            Serial.println("saiu! Botao ENTER do player ");Serial.print(i+1);Serial.print(" pressionado\n");
-
-            //pegando agora o tamanho 
-            allBtState[(i * 3) + 3] = digitalRead(botoes[(i * 3) + 3]);
-            direction = HORIZONTAL;
-            bool changeDirectionToVertical = false;
-            bool changeDirectionToHorizontal = false;
-            while (allBtState[(i * 3) + 3] == HIGH) {
-                allBtState[(i*3) + 1] = digitalRead(botoes[(i*3) + 1]);  //lendo botao X do player i+1
-                if ((allBtState[(i*3) + 1] == LOW) && (!changeDirectionToVertical)) {
-                    changeDirectionToHorizontal = true;  
-                    if(y1 < 7){
-                        y1++;
-                        boatSize++;
-                    } 
-                    lc_players[i].setLed(0,x0,y1,true);
-                    delay(500);
-                }
-                allBtState[(i*3) + 2] = digitalRead(botoes[(i*3) + 2]);  //lendo botao X do player i+1
-                if ((allBtState[(i*3) + 2] == LOW) && (!changeDirectionToHorizontal)) {  
-                    changeDirectionToVertical = true;
-                    direction = VERTICAL;
-                    if(x1 < 7){
-                        x1++;
-                        boatSize++;
-                    } 
-                    lc_players[i].setLed(0,x1,y1,true);
-                    delay(500);
-                }
-                allBtState[(i * 3) + 3] = digitalRead(botoes[(i * 3) + 3]);
-            }
-            delay(100);
-            Serial.println("saiu novamente! Botao ENTER do player ");Serial.print(i+1);Serial.print(" pressionado\n");
-            //bool addBoat(struct Player *player,int x, int y, int boatSize, char direction, char **message)
-            Serial.println("TENTANDO ADCIONAR BARCO:");
-            Serial.print("x0: ");Serial.print(x0);Serial.print("\n");
-            Serial.print("y0: ");Serial.print(y0);Serial.print("\n");
-            Serial.print("boatsize: ");Serial.print(boatSize);Serial.print("\n");
-            Serial.print("direction: ");Serial.print(direction);Serial.print("\n");
-      
-            delay(1000);
-            bool add = addBoat(&players[i],y0,x0,boatSize,direction, &message);
-            Serial.println("mensagem:");
-            Serial.println(message);
-            Serial.println("add?:");
-            Serial.println(add);
-            if (add){
-                printPlayerDetails(players[i]);
-                printBoatDetails(players[i].boats[0]);
-            }   
-        }  
+        }
+            
     }
 }
 void clearButtonState(){
-  for (int i = 0; i < 6; i++){
-      allBtState[i] = 0;
-  }/*   
   bt1State = 0;         // variable for reading the pushbutton status
   bt2State = 0;         // variable for reading the pushbutton status
   bt3State = 0;         // variable for reading the pushbutton status
   bt4State = 0;         // variable for reading the pushbutton status
   bt5State = 0;         // variable for reading the pushbutton status
-  bt6State = 0;*/
+  bt6State = 0;
 }
 //testado
 void initializePlayer(struct Player *player, int *playerIndex){
