@@ -101,7 +101,7 @@ void setup() {
     if (!SD.begin(SD_ChipSelectPin)) {  // inicializando o SDcard
         Serial.println("SD fail");
     } else {
-      Serial.println("Initialization Done!"); 
+        Serial.println("Initialization Done!"); 
     }
     Serial.println("comecou3");
    //tmrpcm.setVolume(5);
@@ -122,14 +122,8 @@ void loop() {
     Serial.println(PLAYER_2_COMECA);
   }*/
   mainGame ();
-  int playerBegin = chooseFirstPlayer();
-  bool gameOver = false;
-  while (!gameOver) {
-    for (int i = 0; i < QTD_PLAYERS; i++) {
-      setLCMatrix(players[i].matrixBoats, lc_players[i], 0);
-    }
-    gameOver = attackHour(players[0].currentPlayer ? 0:1);
-  }
+  delay(10000);
+  
 }
 void clearDisplays(){
   for (int i = 0; i < 2; i++){
@@ -276,57 +270,119 @@ void mainGame ()
     startGame();
     Serial.println("\nTodos os barcos foram adcionados!  Hora de comecar o jogo!!!\n");
     
+    int playerBegin = chooseFirstPlayer();
+    bool gameOver = false;
+    while (!gameOver) {
+      for (int i = 0; i < QTD_PLAYERS; i++) {
+          setLCMatrix(players[i].matrixBoats, lc_players[i], 0);
+      }
+      gameOver = attackHour(players[0].currentPlayer ? 0:1);
+    }
+    
 }
 
 bool attackHour(int currentPlayer){
-  bool gameOver = false;
-  clearButtonState();    
-  int x0 = 0;
-  int y0 = 0;
-  int boatSize = 1;
-  char direction = HORIZONTAL;
-  Serial.println("dentro do attackHour\n");
-  lc_players[currentPlayer].clearDisplay(1);
-  lc_players[currentPlayer].setLed(1,x0,y0,true);
+    bool gameOver = false;
+    clearButtonState();    
+    int x = 0;
+    int y = 0;
+    int boatSize = 1;
+    char direction = HORIZONTAL;
+    Serial.print("dentro do attackHour. Current player: ");Serial.print(currentPlayer ? "Player 1\n":"Player 2\n");
+    lc_players[currentPlayer].clearDisplay(1);
+    lc_players[currentPlayer].setLed(1,x,y,true);
   
-  //solicitando x0 e y0
-  allBtState[(currentPlayer * 3) + 3] = digitalRead(botoes[(currentPlayer * 3) + 3]);
-  //solicitando x0 e y0
-  while (allBtState[(currentPlayer * 3) + 3] == HIGH) {
-    allBtState[(currentPlayer * 3) + 1] = digitalRead(botoes[(currentPlayer * 3) + 1]);  //lendo botao X do player i+1
-    if (allBtState[(currentPlayer * 3) + 1] == LOW) {
-       Serial.print("Botao X do player ");Serial.print(currentPlayer + 1);Serial.print(" pressionado\n");
-       if(y0 < 7){
-        y0++;
-       } else {
-        y0 = 0;
-       }
-       lc_players[currentPlayer].clearDisplay(0);
-       lc_players[currentPlayer].setLed(1,x0,y0,true);
-       delay(500);  
-    }
-    allBtState[(currentPlayer * 3) + 2] = digitalRead(botoes[(currentPlayer * 3) + 2]);  //lendo botao Y do player i+1
-    if (allBtState[(currentPlayer * 3) + 2] == LOW) {
-      Serial.print("Botao Y do player ");Serial.print(currentPlayer + 1);Serial.print(" pressionado\n");
-       if(x0 < 7){
-        x0++;
-       } else {
-        x0 = 0;
-       }
-       lc_players[currentPlayer].clearDisplay(0);
-       lc_players[currentPlayer].setLed(1,x0,y0,true);
-       delay(500);  
-    }
+    //solicitando x e y
     allBtState[(currentPlayer * 3) + 3] = digitalRead(botoes[(currentPlayer * 3) + 3]);
-    /*if (bt3State == LOW) {
-      Serial.println("Botao 3 pressionado");
-      delay(100);
-    }*/
+    while (allBtState[(currentPlayer * 3) + 3] == HIGH) {
+        allBtState[(currentPlayer * 3) + 1] = digitalRead(botoes[(currentPlayer * 3) + 1]);  //lendo botao X do player i+1
+        if (allBtState[(currentPlayer * 3) + 1] == LOW) {
+            Serial.print("Botao X do player ");Serial.print(currentPlayer + 1);Serial.print(" pressionado\n");
+            if(y < 7){
+                y++;
+            } else {
+                y = 0;
+            }
+            lc_players[currentPlayer].clearDisplay(0);
+            lc_players[currentPlayer].setLed(1,x,y,true);
+            delay(500);  
+        }
+        allBtState[(currentPlayer * 3) + 2] = digitalRead(botoes[(currentPlayer * 3) + 2]);  //lendo botao Y do player i+1
+        if (allBtState[(currentPlayer * 3) + 2] == LOW) {
+            Serial.print("Botao Y do player ");Serial.print(currentPlayer + 1);Serial.print(" pressionado\n");
+            if(x < 7){
+                x++;
+            } else {
+                x = 0;
+            }
+            lc_players[currentPlayer].clearDisplay(0);
+            lc_players[currentPlayer].setLed(1,x,y,true);
+            delay(500);  
+        }
+        allBtState[(currentPlayer * 3) + 3] = digitalRead(botoes[(currentPlayer * 3) + 3]);
+      /*if (bt3State == LOW) {
+            Serial.println("Botao 3 pressionado");
+            delay(100);
+        }*/
+    }
+    delay(200);
+    Serial.println("saiu! Botao ENTER do player ");Serial.print(currentPlayer+1);Serial.print(" pressionado\n");
+    Serial.print("x: ");Serial.print(x);Serial.print("\n");
+    Serial.print("y: ");Serial.print(y);Serial.print("\n");
+  
+    int currentDefender = getCurrentDefender();
+    bool fired = fire(x,y, players[currentDefender].matrixBoats);
+  if (fired){
+    int k =  getShipIndexByGivenPoint(x, y, players[currentDefender].boats);    
+    Serial.print("ACERTOU!!!!!!!!  Barco index: ");Serial.print(k);Serial.print("\n");    
+    printMirroredMessage(ACERTOU);
+    if (isSunkenShip(&players[currentDefender].boats[k], players[currentDefender].matrixBoats)){
+      Serial.println("Barco AFUNDOU!!!!!!!!");
+      printMirroredMessage(AFUNDOU);
+      printBoatDetails(players[currentDefender].boats[k]);
+      decrementBoatCount(&players[currentDefender], players[currentDefender].boats[k].size);
+      players[currentDefender].availableBoats --;
+      if(noMoreBoats(players[currentDefender])){
+        Serial.print("JOGO ACABOU!! Player "); Serial.print(players[0].currentPlayer ? 1:2);Serial.print(" ganhou\n");
+        printMirroredMessage(JOGO_ACABOU);
+        if(players[0].currentPlayer){
+          printMirroredMessage(PLAYER_1_GANHOU);
+        } else {
+          printMirroredMessage(PLAYER_2_GANHOU);
+        }
+        gameOver = true;
+      } else {
+        Serial.print("Jogo continua, agora e a vez do player ");Serial.print(players[0].currentPlayer ? 2:1);Serial.print("\n");
+        if(players[0].currentPlayer){
+          printMirroredMessage(JOGO_CONTINUA_2);
+        } else {
+          printMirroredMessage(JOGO_CONTINUA_1);
+        }
+        changeCurrentPlayer(players);
+      }
+    } else {
+      Serial.print("Barco NAO afundou!!!!!!!!\n");
+      printMirroredMessage(BARCO_NAO_AFUNDOU);
+      printBoatDetails(players[currentDefender].boats[k]);
+      Serial.print("Jogo continua, agora e a vez do player ");Serial.print(players[0].currentPlayer ? 2:1);Serial.print("\n");
+      if(players[0].currentPlayer){
+        printMirroredMessage(JOGO_CONTINUA_2);
+      } else {
+        printMirroredMessage(JOGO_CONTINUA_1);
+      }
+      changeCurrentPlayer(players);
+    }
+    printPlayerDetails(players[currentDefender]);
   }
-  delay(200);
-  Serial.println("saiu! Botao ENTER do player ");Serial.print(currentPlayer+1);Serial.print(" pressionado\n");
-  Serial.print("x0: ");Serial.print(x0);Serial.print("\n");
-  Serial.print("y0: ");Serial.print(y0);Serial.print("\n");
+  else{
+    Serial.println("ERROU!!!!!!!!");
+    printMirroredMessage(ERROU);
+  }
+  fillMatrixShots(x,y,players[currentPlayer].matrixShots, fired);
+  printPlayerDetails(players[currentPlayer]);
+  
+  
+  
   /*
       printf("Player %d digite a posicao X do tiro: ",players[0].currentPlayer ? 1:2);
       scanf("%d", &x);
@@ -365,6 +421,22 @@ bool attackHour(int currentPlayer){
       fillMatrixShots(x,y,players[0].matrixShots, fired);
       printPlayerDetails(players[0]);
       */
+    return gameOver;
+}
+
+void printMirroredMessage(const unsigned char message[]){
+  for (int i = 0; i < QTD_PLAYERS; i++) {
+    sc_players[i].scrollMessage(message);  //imprime a mensagem
+  }
+  clearDisplays();
+  printBothMatrix();
+}
+
+void printBothMatrix(){
+  for (int i = 0; i < QTD_PLAYERS; i++) {
+    setLCMatrix(players[i].matrixBoats, lc_players[i], 0);//imprime novamente as matrizes de barco e tiro
+    setLCMatrix(players[i].matrixShots, lc_players[i], 1);
+  }
 }
 
 
@@ -753,7 +825,7 @@ void printBoatDetails(struct Boat boat){
 
 //testado
 //testa se acertou ou errou o tiro
-boolean fire(int x, int y, char matrix[8][8]){
+bool fire(int x, int y, char matrix[8][8]){
     bool fired = false;
     if (matrix[y][x] == 'B') {
         fired = true;
@@ -762,7 +834,7 @@ boolean fire(int x, int y, char matrix[8][8]){
         matrix[y][x] = 'E';    //errou o tiro!
     }
     // printf("TESTE TIRO %c \n", matrix[y][x]);
-    printPlayerDetails(players[1]);
+    //printPlayerDetails(players[1]);
     return fired;
 }
 
@@ -847,4 +919,7 @@ void changeCurrentPlayer(struct Player players[2]){
     players[1].currentPlayer = !players[1].currentPlayer;    
 }
 
+int getCurrentDefender(){
+  return (players[0].currentPlayer ? 1:0);
+}
 
