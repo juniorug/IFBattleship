@@ -253,11 +253,11 @@ void setLineShotMatrix(char matrix[DIM][DIM], LedControl lc, int row, int y){
     for (int col = 0; col < DIM ; col++){
         if ((matrix[row][col] == 'C') || (matrix[row][col] == 'E')){ 
              rowValue += intPow(2, (7-col));  //calcula o valor decimal correspondente à linha.
-	      }
+	}
     }
     rowValue += intPow(2, (7-y)); //adicionando o valor do ponto y ao rowvalue
     lc.setRow(1,row,rowValue); //ligando os leds correspondentes à linha 'row'
-     
+  } 
 }
 
 
