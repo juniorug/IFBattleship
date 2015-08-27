@@ -258,7 +258,9 @@ void setLineShotMatrix(char matrix[DIM][DIM], LedControl lc, int row, int y){
 	      }
     }
     Serial.print("rowValue antes de adcionar o valor do ponto do tiro: ");Serial.print(rowValue); Serial.print("\n"); 
-    rowValue += intPow(2, (7-y)); //adicionando o valor do ponto y ao rowvalue
+    if ((matrix[row][y] != 'C') && (matrix[row][y] != 'E')){
+        rowValue += intPow(2, (7-y)); //adicionando o valor do ponto y ao rowvalue
+    }
     Serial.print("rowValue depois de adcionar o valor do ponto do tiro: ");Serial.print(rowValue); Serial.print("\n");
     lc.setRow(1,row,rowValue); //ligando os leds correspondentes à linha 'row'
 }
@@ -302,7 +304,7 @@ bool attackHour(int currentPlayer){
     //mostra aonde ja foi atirado!
     setLCMatrix(players[currentPlayer].matrixShots, lc_players[currentPlayer], 1);
     //lc_players[currentPlayer].setLed(1,x,y,true);
-    setLineShotMatrix(players[currentPlayer].matrixShots, lc_players[currentPlayer], x, y);
+    setLineShotMatrix(players[currentPlayer].matrixShots, lc_players[currentPlayer], y, x);
     
     //solicitando x e y
     allBtState[(currentPlayer * 3) + 2] = digitalRead(botoes[(currentPlayer * 3) + 2]);
@@ -318,7 +320,7 @@ bool attackHour(int currentPlayer){
             lc_players[currentPlayer].clearDisplay(1);
             setLCMatrix(players[currentPlayer].matrixShots, lc_players[currentPlayer], 1);
             //lc_players[currentPlayer].setLed(1,y,x,true);
-	    setLineShotMatrix(players[currentPlayer].matrixShots, lc_players[currentPlayer], x, y);	
+	    setLineShotMatrix(players[currentPlayer].matrixShots, lc_players[currentPlayer], y, x);	
             delay(500);  
         }
         allBtState[(currentPlayer * 3) + 1] = digitalRead(botoes[(currentPlayer * 3) + 1]);  //lendo botao Y do player i+1
@@ -332,7 +334,7 @@ bool attackHour(int currentPlayer){
             lc_players[currentPlayer].clearDisplay(1);
             setLCMatrix(players[currentPlayer].matrixShots, lc_players[currentPlayer], 1);
             //lc_players[currentPlayer].setLed(1,y,x,true);
-	    setLineShotMatrix(players[currentPlayer].matrixShots, lc_players[currentPlayer], x, y);
+	    setLineShotMatrix(players[currentPlayer].matrixShots, lc_players[currentPlayer], y, x);
             delay(500);  
         }
         allBtState[(currentPlayer * 3) + 2] = digitalRead(botoes[(currentPlayer * 3) + 2]);
