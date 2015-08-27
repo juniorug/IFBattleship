@@ -249,15 +249,18 @@ void setLCMatrix(char matrix[DIM][DIM], LedControl lc, int whatMatrix){
 
 //metodo para imprimir a matriz de tiros quando o player estiver selecionando o ponto que vai atirar
 void setLineShotMatrix(char matrix[DIM][DIM], LedControl lc, int row, int y){
+    Serial.println("inside setLineShotMatrix");
+    Serial.print("[X(Row): ");Serial.print(row);Serial.print("] [Y: ");Serial.print(y);Serial.print("]\n"); 
     int rowValue = 0;
     for (int col = 0; col < DIM ; col++){
         if ((matrix[row][col] == 'C') || (matrix[row][col] == 'E')){ 
              rowValue += intPow(2, (7-col));  //calcula o valor decimal correspondente à linha.
 	      }
     }
+    Serial.print("rowValue antes de adcionar o valor do ponto do tiro: ");Serial.print(rowValue); Serial.print("\n"); 
     rowValue += intPow(2, (7-y)); //adicionando o valor do ponto y ao rowvalue
+    Serial.print("rowValue depois de adcionar o valor do ponto do tiro: ");Serial.print(rowValue); Serial.print("\n");
     lc.setRow(1,row,rowValue); //ligando os leds correspondentes à linha 'row'
-     
 }
 
 
