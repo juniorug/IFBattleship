@@ -17,7 +17,7 @@
 #define TIRO_CERTO 'C'
 #define TIRO_ERRADO 'E'
 #define QTD_PLAYERS 2
-#define MAX_BOATS 4
+#define MAX_BOATS 2
 
 
 
@@ -255,7 +255,7 @@ void setLineShotMatrix(char matrix[DIM][DIM], LedControl lc, int row, int y){
     for (int col = 0; col < DIM ; col++){
         if ((matrix[row][col] == 'C') || (matrix[row][col] == 'E')){ 
              rowValue += intPow(2, (7-col));  //calcula o valor decimal correspondente à linha.
-        }
+	      }
     }
     Serial.print("rowValue antes de adcionar o valor do ponto do tiro: ");Serial.print(rowValue); Serial.print("\n"); 
     if ((matrix[row][y] != 'C') && (matrix[row][y] != 'E')){
@@ -264,42 +264,7 @@ void setLineShotMatrix(char matrix[DIM][DIM], LedControl lc, int row, int y){
     Serial.print("rowValue depois de adcionar o valor do ponto do tiro: ");Serial.print(rowValue); Serial.print("\n");
     lc.setRow(1,row,rowValue); //ligando os leds correspondentes à linha 'row'
 }
-//barco
-void setLineBoatMatrix(char matrix[DIM][DIM], LedControl lc, int row, int y){
-    //Serial.println("inside setLineBoatMatrix");
-    //Serial.print("[X(Row): ");Serial.print(row);Serial.print("] [Y: ");Serial.print(y);Serial.print("]\n"); 
-    int rowValue = 0;
-    for (int col = 0; col < DIM ; col++){
-        if (matrix[row][col] == 'B') { 
-             rowValue += intPow(2, (7-col));  //calcula o valor decimal correspondente à linha.
-        }
-    }
-    //Serial.print("rowValue antes de adcionar o valor do ponto do barco: ");Serial.print(rowValue); Serial.print("\n"); 
-    if (matrix[row][y] != 'B') {
-        rowValue += intPow(2, (7-y)); //adicionando o valor do ponto y ao rowvalue
-    }
-    //Serial.print("rowValue depois de adcionar o valor do ponto do barco: ");Serial.print(rowValue); Serial.print("\n");
-    lc.setRow(0,row,rowValue); //ligando os leds correspondentes à linha 'row'
-}
-//incrementando barco
-void setLineIncreaseBoatMatrix(char matrix[DIM][DIM], LedControl lc, int row, int y,int y1 ){
-    Serial.println("inside setLineIncreaseBoatMatrix");
-    Serial.print("[X(Row): ");Serial.print(row);Serial.print("] [Y: ");Serial.print(y);Serial.print("] [Y1: ");Serial.print(y1);Serial.print("]\n");
-    int rowValue = 0;
-    for (int col = 0; col < DIM ; col++){
-        if (matrix[row][col] == 'B') { 
-             rowValue += intPow(2, (7-col));  //calcula o valor decimal correspondente à linha.
-        }
-    }
-    Serial.print("rowValue antes de adcionar o valor do ponto do barco: ");Serial.print(rowValue); Serial.print("\n"); 
-    for (int colY = y; colY <= y1; colY++){
-        if (matrix[row][colY] != 'B') {
-            rowValue += intPow(2, (7-colY)); //adicionando o valor do ponto y ao rowvalue
-        }
-    }
-    Serial.print("rowValue depois de adcionar o valor do ponto do barco: ");Serial.print(rowValue); Serial.print("\n");
-    lc.setRow(0,row,rowValue); //ligando os leds correspondentes à linha 'row'
-}
+
 
 
 
@@ -355,7 +320,7 @@ bool attackHour(int currentPlayer){
             lc_players[currentPlayer].clearDisplay(1);
             setLCMatrix(players[currentPlayer].matrixShots, lc_players[currentPlayer], 1);
             //lc_players[currentPlayer].setLed(1,y,x,true);
-            setLineShotMatrix(players[currentPlayer].matrixShots, lc_players[currentPlayer], y, x); 
+	    setLineShotMatrix(players[currentPlayer].matrixShots, lc_players[currentPlayer], y, x);	
             delay(500);  
         }
         allBtState[(currentPlayer * 3) + 1] = digitalRead(botoes[(currentPlayer * 3) + 1]);  //lendo botao Y do player i+1
@@ -369,7 +334,7 @@ bool attackHour(int currentPlayer){
             lc_players[currentPlayer].clearDisplay(1);
             setLCMatrix(players[currentPlayer].matrixShots, lc_players[currentPlayer], 1);
             //lc_players[currentPlayer].setLed(1,y,x,true);
-            setLineShotMatrix(players[currentPlayer].matrixShots, lc_players[currentPlayer], y, x);
+	    setLineShotMatrix(players[currentPlayer].matrixShots, lc_players[currentPlayer], y, x);
             delay(500);  
         }
         allBtState[(currentPlayer * 3) + 2] = digitalRead(botoes[(currentPlayer * 3) + 2]);
@@ -407,8 +372,8 @@ bool attackHour(int currentPlayer){
         gameOver = true;
       } else {
         Serial.print("Jogo continua, agora e a vez do player ");Serial.print(players[0].currentPlayer ? 2:1);Serial.print("\n");
-        /*printMirroredMessage(JOGO_CONTINUA);
-        if(players[0].currentPlayer){
+        printMirroredMessage(JOGO_CONTINUA);
+        /*if(players[0].currentPlayer){
           printMirroredMessage(JOGO_CONTINUA_2);
         } else {
           printMirroredMessage(JOGO_CONTINUA_1);
@@ -419,11 +384,11 @@ bool attackHour(int currentPlayer){
       printMirroredMessage(BARCO_NAO_AFUNDOU);
       printBoatDetails(players[currentDefender].boats[k]);
       Serial.print("Jogo continua, agora e a vez do player ");Serial.print(players[0].currentPlayer ? 2:1);Serial.print("\n");
-      /*if(players[0].currentPlayer){
+      if(players[0].currentPlayer){
         printMirroredMessage(JOGO_CONTINUA_2);
       } else {
         printMirroredMessage(JOGO_CONTINUA_1);
-      }*/
+      }
     }
     printPlayerDetails(players[currentDefender]);
   } else{
@@ -485,8 +450,8 @@ void startGame(){
             direction = HORIZONTAL;
             lc_players[i].clearDisplay(0);
             setLCMatrix(players[i].matrixBoats, lc_players[i], 0);//imprime novamente as matrizes de barco e tiro
-            //lc_players[i].setLed(0,x0,y0,true);
-            setLineBoatMatrix(players[i].matrixBoats, lc_players[i], y0, x0);
+            lc_players[i].setLed(0,x0,y0,true);
+      
             //solicitando x0 e y0
             allBtState[(i * 3) + 2] = digitalRead(botoes[(i * 3) + 2]);
             //solicitando x0 e y0
@@ -505,8 +470,7 @@ void startGame(){
                     //Serial.print("y depois: ");Serial.print(y0);Serial.print("\n");
                     lc_players[i].clearDisplay(0);
                     setLCMatrix(players[i].matrixBoats, lc_players[i], 0);//imprime novamente as matrizes de barco e tiro
-                    //lc_players[i].setLed(0,x0,y0,true);
-                    setLineBoatMatrix(players[i].matrixBoats, lc_players[i], x0, y0);
+                    lc_players[i].setLed(0,x0,y0,true);
                     delay(500);  
                 }
                 allBtState[(i*3) + 1] = digitalRead(botoes[(i*3) + 1]);  //lendo botao Y do player i+1
@@ -523,13 +487,13 @@ void startGame(){
                     //Serial.print("x depois: ");Serial.print(x0);Serial.print("\n");
                     lc_players[i].clearDisplay(0);
                     setLCMatrix(players[i].matrixBoats, lc_players[i], 0);//imprime novamente as matrizes de barco e tiro
-                    //lc_players[i].setLed(0,x0,y0,true);
-                    setLineBoatMatrix(players[i].matrixBoats, lc_players[i], x0, y0);
-                    delay(500);  
+                    lc_players[i].setLed(0,x0,y0,true);
+                    
+                  delay(500);  
                 }
                 allBtState[(i * 3) + 2] = digitalRead(botoes[(i * 3) + 2]);
             }
-            delay(500);
+            delay(200);
             Serial.print("saiu! Botao ENTER do player ");Serial.print(i+1);Serial.print(" pressionado\n");
 
             //pegando agora o tamanho 
@@ -545,13 +509,7 @@ void startGame(){
                         y1++;
                         boatSize++;
                     } 
-                    //lc_players[i].setLed(0,x0,y1,true);
-                    //setLineBoatMatrix(players[i].matrixBoats, lc_players[i], x0, y1);
-                    setLineIncreaseBoatMatrix(players[i].matrixBoats, lc_players[i], x0, y0, y1);
-                    for(int line = y0; line <=y1; line++){
-                      //lc_players[i].setLed(0,x0,line,true);
-                      //setLCMatrix(players[i].matrixBoats, lc_players[i], 0);//imprime novamente as matrizes de barco e tiro
-                    }
+                    lc_players[i].setLed(0,x0,y1,true);
                     delay(500);
                 }
                 allBtState[(i*3) + 1] = digitalRead(botoes[(i*3) + 1]);  //lendo botao X do player i+1
@@ -562,12 +520,7 @@ void startGame(){
                         x1++;
                         boatSize++;
                     } 
-                    //lc_players[i].setLed(0,x1,y1,true);
-                    setLineBoatMatrix(players[i].matrixBoats, lc_players[i], x1, y1);
-                    for(int row = x0; row <= x1; row++){
-                      //setLCMatrix(players[i].matrixBoats, lc_players[i], 0);//imprime novamente as matrizes de barco e tiro
-                      //lc_players[i].setLed(0,row,y1,true);
-                    }
+                    lc_players[i].setLed(0,x1,y1,true);
                     delay(500);
                 }
                 allBtState[(i * 3) + 2] = digitalRead(botoes[(i * 3) + 2]);
